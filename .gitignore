@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+env/
+venv/
+
+# Project specific
+.python-version
+
+# file
+**.parquet
+**.jar
+**.html
