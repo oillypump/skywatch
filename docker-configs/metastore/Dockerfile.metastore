@@ -1,0 +1,15 @@
+FROM apache/hive:4.0.0
+
+USER root
+
+ENV POSTGRES_VERSION=42.7.3
+
+
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -L -o /opt/hive/lib/postgresql-${POSTGRES_VERSION}.jar \
+    https://jdbc.postgresql.org/download/postgresql-${POSTGRES_VERSION}.jar && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+USER hive
