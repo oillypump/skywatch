@@ -13,7 +13,6 @@ cat << EOF | sudo tee -a /etc/hosts >/dev/null
 
 # FUN host entries
 127.0.0.1 hive-metastore
-127.0.0.1 metastore-db
 127.0.0.1 minio
 127.0.0.1 trino
 
