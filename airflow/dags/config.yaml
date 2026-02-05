@@ -1,0 +1,32 @@
+locations:
+  - province: "jakarta"
+    cities:
+      - "jakarta"
+      - "tanah-abang"
+  - province: "west-java"
+    cities:
+      - "bandung"
+      - "depok"
+  - province: "banten"
+    cities:
+      - "tangerang"
+  - province: "central-java"
+    cities:
+      - "semarang"
+  - province: "east-java"
+    cities:
+      - "surabaya"
+  - province: "yogyakarta"
+    cities:
+      - "yogyakarta"
+
+weather_map:
+  "01": "Clear Sky"
+  "02": "Few Clouds"
+  "03": "Scattered Clouds"
+  "04": "Broken Clouds"
+  "09": "Shower Rain"
+  "10": "Rain"
+  "11": "Thunderstorm"
+  "13": "Snow"
+  "50": "Mist/Fog"

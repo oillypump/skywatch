@@ -174,8 +174,8 @@ def get_air_quality_forecast(url, province, city):
 
 
 if __name__ == "__main__":
-    province = "west-java"
-    city = "bandung"
+    province = "jakarta"
+    city = "jakarta"
     target_url = f"https://www.iqair.com/indonesia/{province}/{city}"
     get_air_quality(target_url, province, city)
     get_air_quality_forecast(target_url, province, city)

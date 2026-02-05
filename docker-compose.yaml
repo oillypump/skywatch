@@ -32,7 +32,7 @@ services:
     command: api-server
     container_name: airflow-apiserver
     ports:
-      - "8080:8080"
+      - "8181:8080"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/version"]
       interval: 30s
@@ -291,6 +291,7 @@ services:
   trino:
     image: "trinodb/trino:latest"
     hostname: trino
+    container_name: trino
     ports:
       - "8080:8080"
     volumes:

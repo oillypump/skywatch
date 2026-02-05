@@ -8,5 +8,6 @@ dependencies = [
     "pandas>=3.0.0",
     "pyarrow>=23.0.0",
     "pyiceberg[hive]>=0.10.0",
+    "pyyaml>=6.0.3",
     "requests>=2.32.5",
 ]
