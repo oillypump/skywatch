@@ -15,20 +15,11 @@ SkyWatch is a robust Python-based web scraping tool designed to extract real-tim
 ### 1. create uv env
 
 ```bash
-uv init --python=3.12.12 --name=dwh--no-readme
+uv init --python=3.12.12 --name=dwh --no-readme
 uv run which python
 ```
 
-#### 2. create folder
-
-```bash
-mkdir -p airflow/dags
-mkdir -p airflow/logs
-mkdir -p airflow/plugins
-mkdir -p airflow/config
-```
-
-#### 3. create .env for airflow services
+#### 2. create .env for airflow services
 
 copy this script run on your terminal within this folder project
 
@@ -38,6 +29,7 @@ AIRFLOW_UID=$(id -u)
 _AIRFLOW_WWW_USER_USERNAME=airflowuser
 _AIRFLOW_WWW_USER_PASSWORD=airflowuser
 AIRFLOW_PROJ_DIR=./airflow
+_PIP_ADDITIONAL_REQUIREMENTS=pyiceberg[hive,s3fs] pyarrow
 EOF
 ```
 

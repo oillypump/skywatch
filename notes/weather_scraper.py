@@ -1,4 +1,4 @@
-from airflow.decorators import dag, task  # Perbaikan import
+from airflow.sdk import dag, task
 from datetime import datetime, timedelta
 import pandas as pd
 import time
@@ -50,8 +50,9 @@ def forecast_weather():
             for city in loc["cities"]:
                 url = f"https://www.iqair.com/indonesia/{province}/{city}"
                 try:
+                    print(f"[*] Scraping Current Data: {city}...")
                     response = requests.get(url, headers=headers, timeout=15)
-                    response.raise_for_status()  # Cek jika status bukan 200
+                    response.raise_for_status()
                     soup = BeautifulSoup(response.text, "html.parser")
 
                     forecast_table = soup.find("table")
@@ -63,7 +64,6 @@ def forecast_weather():
 
                         for item in forecast_items:
                             try:
-                                print(f"[*] Scraping Current Data: {city}...")
                                 time_element = item.find("p", class_="max-w-12")
                                 if not time_element:
                                     continue
@@ -163,6 +163,7 @@ def forecast_weather():
         # --- 3. REPORTING ---
         if all_forecasts:
             df = pd.DataFrame(all_forecasts)
+            print("\n" + "=" * 80 + "\nREPORT FORECAST WEATHER\n" + "=" * 80)
             print(f"\nSUCCESS: Scraped {len(df)} rows.")
             print(df.head(5).to_string())
             # return all_forecasts
@@ -189,10 +190,7 @@ def forecast_weather():
             except Exception as minio_err:
                 print(f"\n[!] MinIO Upload Error: {minio_err}")
 
-            # Print report ke log
-            print("\n" + "=" * 80 + "\nREPORT AIR QUALITY\n" + "=" * 80)
-            # print(df.to_string(index=False))
-        return f"Successful: {len(df)} cities uploaded to {object_key}."
+        return f"Successful: {len(df)} rows for some cities uploaded to {object_key}."
 
     # Memanggil task di dalam DAG
     extract_forecast_weather()
