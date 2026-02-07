@@ -12,18 +12,21 @@ from botocore.client import Config
 import io
 import pyarrow as pa
 from pyiceberg.catalog import load_catalog
+from airflow.datasets import Dataset
+
+FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
 
 
 @dag(
-    dag_id="weather_scraper_iceberg",
-    schedule="10 * * * *",
+    dag_id="scraper_weather_iceberg",
+    schedule="5 * * * *",
     start_date=datetime(2026, 1, 1),
     catchup=False,
     tags=["bronze", "weather", "iceberg"],
 )
 def forecast_weather():
 
-    @task()
+    @task(outlets=[FORECAST_BRONZE])
     def extract_forecast_weather():
         # --- 1. CONFIG & SETUP ---
         # Menggunakan AIRFLOW_HOME agar path lebih pasti

@@ -14,17 +14,20 @@ from botocore.client import Config
 import pendulum
 from pyiceberg.catalog import load_catalog
 import re
+from airflow.datasets import Dataset
+
+AQI_BRONZE = Dataset("s3a://lakehouse/bronze/raw_aqi_index")
 
 
 @dag(
-    dag_id="aqi_scraper_iceberg",
-    schedule="10 * * * *",
+    dag_id="scraper_aqi_iceberg",
+    schedule="5 * * * *",
     start_date=datetime(2026, 1, 1),
     catchup=False,
-    tags=["bronze", "aqi"],
+    tags=["bronze", "aqi", "iceberg"],
 )
 def air_quality_index():
-    @task()
+    @task(outlets=[AQI_BRONZE])
     def extract_aqi():
         """
         LAYER : BRONZE
@@ -220,7 +223,6 @@ def air_quality_index():
             },
         )
 
-        # 2. Buat namespace 'silver' jika belum ada
         tgt_namespace = "bronze"
         try:
             catalog.create_namespace(tgt_namespace)

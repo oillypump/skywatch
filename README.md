@@ -1,14 +1,55 @@
 # Skywatch
 
-SkyWatch is a robust Python-based web scraping tool designed to extract real-time air quality data and hourly forecasts from the IQAir platform. It provides structured insights into pollution levels, meteorological data, and future trends for specific regions.
+## Problem
 
-## 🚀 Features
+Kualitas udara dan cuaca di Indonesia.
 
-- Real-Time Data Extraction: Captures current AQI index, air quality status, and main pollutant concentration.
-- Hourly Forecasting: Retrieves 24-hour forecasts including temperature, wind speed, and humidity.
-- Smart Time-Tracking: Automatically handles date transitions (day-over-day) in the forecast table.
-- Standardized Timestamps: Outputs data in a clean YYYY-MM-DD HH:mm:ss format, ready for database integration.
-- Dynamic URL Handling: Supports region-specific scraping (e.g., Province and City levels).
+Project ini ditujukan untuk memonitor Air Quality Index dan Weather untuk kota2 besar yang ada di Pulau Jawa.
+Data yang digunakan di scrap dari website : https://www.iqair.com/indonesia .
+
+## Cloud / Environment
+
+Semua yang running pada project ini menggunakan local setup environment.
+
+## Data Ingestion
+
+jadi ada 2 object yang akan discrap:
+
+1.  **Data Air Quality Index**, yang berisi :
+    - city
+    - aqi
+    - aqi_status
+    - main_pollutant
+    - concentration
+    - weather
+    - temperature
+    - humidity
+    - wind_speed
+    - wind_direction
+    - alert
+    - observation_time
+    - scraped_at
+
+2.  **Data Weather Forecast**, yang berisi :
+    - city
+    - forecast_ts
+    - aqi
+    - weather
+    - temperature
+    - wind_speed
+    - humidity
+    - observation_time
+    - scraped_at
+
+## Data Warehouse
+
+1. de-duplication
+2. cleansing
+3. data_type
+
+## Transformations
+
+## Objective
 
 ## re-populate
 
