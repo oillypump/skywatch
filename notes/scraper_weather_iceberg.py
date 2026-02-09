@@ -19,7 +19,7 @@ FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
 
 @dag(
     dag_id="scraper_weather_iceberg",
-    schedule="5 * * * *",
+    schedule="5,35 * * * *",
     start_date=datetime(2026, 1, 1),
     catchup=False,
     tags=["bronze", "weather", "iceberg"],
@@ -147,6 +147,7 @@ def forecast_weather():
 
                                 all_forecasts.append(
                                     {
+                                        "province": province.replace("-", " ").title(),
                                         "city": city.replace("-", " ").title(),
                                         "forecast_ts": full_ts,
                                         "aqi": aqi,
@@ -196,6 +197,8 @@ def forecast_weather():
         try:
             table = catalog.load_table(table_id)
             print(f"ℹ️ Table {table_id} found. Appending data...")
+            with table.update_schema() as update:
+                update.union_by_name(arrow_table.schema)
         except Exception:
             print(f"✨ Creating new table {table_id}...")
             table = catalog.create_table(

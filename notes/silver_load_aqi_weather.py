@@ -18,7 +18,7 @@ FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
 
 
 @dag(
-    dag_id="load_aqi_weather",
+    dag_id="silver_load_aqi_weather",
     start_date=datetime(2026, 2, 1),
     schedule=(AQI_BRONZE, FORECAST_BRONZE),
     catchup=False,
@@ -45,7 +45,7 @@ def weather_aqi_pipeline():
         finally:
             conn.close()
 
-    @task
+    @task()
     def schema_preparation():
         query = """
             CREATE SCHEMA IF NOT EXISTS iceberg.silver
@@ -54,7 +54,7 @@ def weather_aqi_pipeline():
         execute_trino(query)
         print("Schema 'silver' prepared.")
 
-    @task
+    @task()
     def table_preparation():
         query = """
         CREATE TABLE IF NOT EXISTS iceberg.silver.weather_aqi_hourly (
