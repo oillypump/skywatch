@@ -21,7 +21,7 @@ x-airflow-common: &airflow-common
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
   networks:
-    - skywatch-network
+    - dateng-net
   depends_on: &airflow-common-depends-on
     postgres:
       condition: service_healthy
@@ -220,7 +220,7 @@ services:
     volumes:
       - minio-volume:/data
     networks:
-      - skywatch-network
+      - dateng-net
     command: >
       server --console-address ":9001" /data
     healthcheck:
@@ -255,7 +255,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - skywatch-network
+      - dateng-net
 
   hive-metastore:
     build:
@@ -286,7 +286,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - skywatch-network
+      - dateng-net
 
   trino:
     image: "trinodb/trino:latest"
@@ -297,7 +297,7 @@ services:
     volumes:
       - ./docker-configs/trino/etc:/etc/trino
     networks:
-      - skywatch-network
+      - dateng-net
     depends_on:
       hive-metastore:
         condition: service_healthy
@@ -316,7 +316,7 @@ services:
       MB_DB_PASS: metabase
       MB_DB_HOST: postgres
     networks:
-      - skywatch-network
+      - dateng-net
     healthcheck:
       test: curl --fail -I http://localhost:3000/api/health || exit 1
       interval: 15s
@@ -331,5 +331,5 @@ volumes:
   postgres-volume:
 
 networks:
-  skywatch-network:
+  dateng-net:
     driver: bridge
