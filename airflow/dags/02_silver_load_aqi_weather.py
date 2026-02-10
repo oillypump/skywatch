@@ -14,6 +14,9 @@ TRINO_CONFIG = {
 AQI_BRONZE = Dataset("s3a://lakehouse/bronze/raw_aqi_index")
 FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
 
+AQI_SILVER = Dataset("s3a://lakehouse/silver/aqi_index")
+FORECAST_SILVER = Dataset("s3a://lakehouse/silver/weather_forecast")
+
 
 @dag(
     dag_id="02_silver_load_aqi_weather",
@@ -106,7 +109,7 @@ def weather_aqi_pipeline():
         execute_trino(query)
         print("Table 'forecast_weather' prepared.")
 
-    @task()
+    @task(outlets=[AQI_SILVER])
     def upsert_aqi_index():
         query = """
         MERGE INTO iceberg.silver.aqi_index AS target
@@ -121,7 +124,7 @@ def weather_aqi_pipeline():
                             'HH:mm, MMM dd, yyyy'
                         ) AS TIMESTAMP
                     ) as event_ts,                    
-                    CAST(aqi AS INTEGER) as aqi_val,
+                    CAST(regexp_replace(aqi, '[^\d]', '') AS INTEGER) as aqi_val,
                     aqi_status,
                     main_pollutant,                    
                     CAST(regexp_replace(concentration, '[^\d.-]', '') AS DOUBLE) as pollutant_val,
@@ -196,7 +199,7 @@ def weather_aqi_pipeline():
         execute_trino(query)
         print("Data successfully merged into silver.aqi_index")
 
-    @task()
+    @task(outlets=[FORECAST_SILVER])
     def upsert_forecast_weather():
         query = """
         MERGE INTO iceberg.silver.forecast_weather AS target
@@ -232,11 +235,14 @@ def weather_aqi_pipeline():
 
         WHEN MATCHED THEN
             UPDATE SET
+                forecast_ts = source.forecast_ts,
+                observation_ts = source.observation_ts,
                 aqi_val = source.aqi_val,
                 weather_condition = source.weather_condition,
                 temp_val = source.temp_val,
                 wind_val = source.wind_val,
-                humidity_val = source.humidity_val
+                humidity_val = source.humidity_val,
+                scraped_ts = source.scraped_ts
 
         WHEN NOT MATCHED THEN
             INSERT (

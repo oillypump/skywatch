@@ -11,13 +11,16 @@ locations:
       - "bogor"
   - province: "banten"
     cities:
+      - "serang"
       - "tangerang"
+      - "south-tangerang"
   - province: "central-java"
     cities:
       - "semarang"
   - province: "east-java"
     cities:
       - "surabaya"
+      - "malang"
   - province: "yogyakarta"
     cities:
       - "yogyakarta"

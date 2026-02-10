@@ -22,7 +22,8 @@ FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
 
 @dag(
     dag_id="01_bronze_load_aqi_weather",
-    schedule="5,35 * * * *",
+    schedule="*/10 * * * *",
+    # schedule="5,35 * * * *",
     start_date=datetime(2026, 1, 1),
     catchup=False,
     tags=["bronze", "iceberg"],
