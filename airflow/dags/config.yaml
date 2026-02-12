@@ -2,7 +2,6 @@ locations:
   - province: "jakarta"
     cities:
       - "jakarta"
-      - "tanah-abang"
   - province: "west-java"
     cities:
       - "bandung"
@@ -24,6 +23,16 @@ locations:
   - province: "yogyakarta"
     cities:
       - "yogyakarta"
+  - province: "riau"
+    cities:
+      - "pekanbaru"
+      - "duri"
+  - province: "south-sumatra"
+    cities:
+      - "palembang"
+  - province: "north-sumatra"
+    cities:
+      - "medan"
 
 weather_map:
   "01": "Clear Sky"

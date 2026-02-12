@@ -256,12 +256,17 @@ def weather_aqi_pipeline():
 
         WHEN MATCHED THEN
             UPDATE SET
+                city_id = source.city_id,
                 aqi = source.aqi,
                 aqi_id = source.aqi_id,
+                main_pollutant = source.main_pollutant,
+                pollutant_val = source.pollutant_val,
                 weather_condition = source.weather_condition,
                 temp_val = source.temp_val,
                 humidity_val = source.humidity_val,
                 wind_val = source.wind_val,
+                wind_dir = source.wind_dir,
+                alert = source.alert,
                 load_ts = source.load_ts
 
         WHEN NOT MATCHED THEN
