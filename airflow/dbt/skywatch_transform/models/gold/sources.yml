@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: silver
+    schema: silver
+    tables:
+      - name: aqi_index
+      - name: forecast_weather

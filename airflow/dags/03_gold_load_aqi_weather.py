@@ -184,7 +184,9 @@ def weather_aqi_pipeline():
                 observation_ts TIMESTAMP(6)
             ) WITH (
                 format = 'PARQUET',
-                location = 's3a://lakehouse/gold/fact_aqi_weather/'
+                location = 's3a://lakehouse/gold/fact_aqi_weather/',
+                partitioning = ARRAY['city_id', 'day(event_ts)'],
+                sorted_by = ARRAY['event_ts']
             )
         """
         execute_trino(create_query)
@@ -271,16 +273,38 @@ def weather_aqi_pipeline():
 
         WHEN NOT MATCHED THEN
             INSERT (
-                fact_id, city_id, event_ts, aqi, aqi_id, 
-                main_pollutant, pollutant_val, weather_condition, 
-                temp_val, humidity_val, wind_val, wind_dir, 
-                alert, load_ts, observation_ts
+                fact_id, 
+                city_id, 
+                event_ts, 
+                aqi, 
+                aqi_id, 
+                main_pollutant, 
+                pollutant_val, 
+                weather_condition, 
+                temp_val, 
+                humidity_val, 
+                wind_val, 
+                wind_dir, 
+                alert, 
+                load_ts, 
+                observation_ts
             )
             VALUES (
-                source.fact_id, source.city_id, source.event_ts, source.aqi, source.aqi_id, 
-                source.main_pollutant, source.pollutant_val, source.weather_condition, 
-                source.temp_val, source.humidity_val, source.wind_val, source.wind_dir, 
-                source.alert, source.load_ts, source.observation_ts
+                source.fact_id, 
+                source.city_id, 
+                source.event_ts, 
+                source.aqi, 
+                source.aqi_id, 
+                source.main_pollutant, 
+                source.pollutant_val, 
+                source.weather_condition,
+                source.temp_val, 
+                source.humidity_val, 
+                source.wind_val, 
+                source.wind_dir,
+                source.alert, 
+                source.load_ts, 
+                source.observation_ts
             )
         """
         execute_trino(upsert_query)
@@ -288,9 +312,7 @@ def weather_aqi_pipeline():
 
     # Flow DAG
     gold_preps = schema_preparation()
-    gold_preps >> table_dim_city()
-    gold_preps >> table_dim_aqi()
-    gold_preps >> table_fact_aqi_weather()
+    gold_preps >> [table_dim_city(), table_dim_aqi()] >> table_fact_aqi_weather()
 
 
 # Inisialisasi DAG

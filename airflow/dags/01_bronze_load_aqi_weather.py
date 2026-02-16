@@ -26,6 +26,7 @@ FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
     # schedule="5,35 * * * *",
     start_date=datetime(2026, 1, 1),
     catchup=False,
+    max_active_runs=1,
     tags=["bronze", "iceberg"],
 )
 def air_quality_and_forecast_weather():

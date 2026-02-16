@@ -5,6 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.14.3",
+    "dbt-trino>=1.10.1",
     "pandas>=3.0.0",
     "pyarrow>=23.0.0",
     "pyiceberg[hive]>=0.10.0",

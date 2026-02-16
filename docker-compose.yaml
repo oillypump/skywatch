@@ -19,9 +19,10 @@ x-airflow-common: &airflow-common
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/dbt:/opt/airflow/dbt
   user: "${AIRFLOW_UID:-50000}:0"
   networks:
-    - dateng-net
+    - datengnet
   depends_on: &airflow-common-depends-on
     postgres:
       condition: service_healthy
@@ -30,7 +31,7 @@ services:
   airflow-apiserver:
     <<: *airflow-common
     command: api-server
-    container_name: airflow-apiserver
+    hostname: airflow-apiserver
     ports:
       - "8181:8080"
     healthcheck:
@@ -48,7 +49,7 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
-    container_name: airflow-scheduler
+    hostname: airflow-scheduler
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
       interval: 30s
@@ -64,7 +65,7 @@ services:
   airflow-dag-processor:
     <<: *airflow-common
     command: dag-processor
-    container_name: airflow-dag-processor
+    hostname: airflow-dag-processor
     healthcheck:
       test:
         [
@@ -84,7 +85,7 @@ services:
   airflow-triggerer:
     <<: *airflow-common
     command: triggerer
-    container_name: airflow-triggerer
+    hostname: airflow-triggerer
     healthcheck:
       test:
         [
@@ -191,7 +192,6 @@ services:
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
       _PIP_ADDITIONAL_REQUIREMENTS: ""
     user: "0:0"
-    container_name: airflow-init
 
   airflow-cli:
     <<: *airflow-common
@@ -204,13 +204,12 @@ services:
       - bash
       - -c
       - airflow
-    container_name: airflow-cli
     depends_on:
       <<: *airflow-common-depends-on
 
   minio:
-    image: minio/minio:latest
-    container_name: minio
+    image: minio/minio:${MINIO_VERSION:-latest}
+    hostname: minio
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -218,9 +217,9 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
-      - minio-volume:/data
+      - miniovolume:/data
     networks:
-      - dateng-net
+      - datengnet
     command: >
       server --console-address ":9001" /data
     healthcheck:
@@ -228,40 +227,46 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - datengnet
     entrypoint: >
       /bin/sh -c "
-      (sleep 10; 
-       mc alias set local http://localhost:9000 minioadmin minioadmin; 
-       mc mb --ignore-existing local/lakehouse) & 
-      /usr/bin/docker-entrypoint.sh server --console-address ':9001' /data
+      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc mb --ignore-existing myminio/lakehouse;
+      exit 0;
       "
 
   postgres:
     image: postgres:16
-    container_name: postgres
     hostname: postgres
     environment:
       POSTGRES_USER: pguser
       POSTGRES_PASSWORD: pgpassword
       POSTGRES_DB: postgres
     volumes:
-      - postgres-volume:/var/lib/postgresql/data
+      - postgresvolume:/var/lib/postgresql/data
       - ./docker-configs/postgres:/docker-entrypoint-initdb.d/
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pguser -d postgres"]
-      interval: 5s
+      interval: 30s
+      timeout: 15s
       retries: 5
-      start_period: 30s
+      start_period: 60s
     ports:
       - "5432:5432"
     networks:
-      - dateng-net
+      - datengnet
 
   hive-metastore:
     build:
       context: ./docker-configs/metastore
       dockerfile: Dockerfile.metastore
-    container_name: hive-metastore
     hostname: hive-metastore
     ports:
       - "9083:9083"
@@ -286,25 +291,25 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - dateng-net
+      - datengnet
 
   trino:
-    image: "trinodb/trino:latest"
+    image: trinodb/trino:${TRINO_VERSION:-latest}
     hostname: trino
-    container_name: trino
     ports:
       - "8080:8080"
     volumes:
       - ./docker-configs/trino/etc:/etc/trino
     networks:
-      - dateng-net
+      - datengnet
     depends_on:
       hive-metastore:
         condition: service_healthy
+      minio:
+        condition: service_healthy
 
   metabase:
-    image: metabase/metabase:latest
-    container_name: metabase
+    image: metabase/metabase:${METABASE_VERSION:-latest}
     hostname: metabase
     ports:
       - 3000:3000
@@ -316,7 +321,7 @@ services:
       MB_DB_PASS: metabase
       MB_DB_HOST: postgres
     networks:
-      - dateng-net
+      - datengnet
     healthcheck:
       test: curl --fail -I http://localhost:3000/api/health || exit 1
       interval: 15s
@@ -327,9 +332,9 @@ services:
         condition: service_healthy
 
 volumes:
-  minio-volume:
-  postgres-volume:
+  miniovolume:
+  postgresvolume:
 
 networks:
-  dateng-net:
+  datengnet:
     driver: bridge

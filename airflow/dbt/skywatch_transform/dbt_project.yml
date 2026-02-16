@@ -1,0 +1,27 @@
+name: "skywatch_transform"
+version: "1.0.0"
+
+profile: "skywatch_transform"
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  skywatch_transform:
+    +type: iceberg
+    silver:
+      +schema: silver
+      +materialized: incremental
+      +incremental_strategy: merge
+    gold:
+      +schema: gold
+      +materialized: incremental
+      +incremental_strategy: merge

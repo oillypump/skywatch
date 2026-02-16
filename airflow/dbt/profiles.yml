@@ -1,0 +1,13 @@
+skywatch_transform:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      method: none
+      user: admin
+      password: ""
+      host: trino
+      port: 8080
+      catalog: "iceberg"
+      schema: "gold"
+      threads: 4

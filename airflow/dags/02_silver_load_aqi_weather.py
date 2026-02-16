@@ -78,7 +78,8 @@ def weather_aqi_pipeline():
         WITH (
             partitioning = ARRAY['city', 'month(event_ts)'],
             location = 's3a://lakehouse/silver/aqi_index/',
-            format = 'PARQUET'
+            format = 'PARQUET',
+            sorted_by = ARRAY['event_ts']
         )
         """
         execute_trino(query)
@@ -103,7 +104,8 @@ def weather_aqi_pipeline():
         WITH (
             partitioning = ARRAY['city', 'month(observation_ts)'],
             location = 's3a://lakehouse/silver/forecast_weather/',
-            format = 'PARQUET'
+            format = 'PARQUET',
+            sorted_by = ARRAY['observation_ts']
         )
         """
         execute_trino(query)
