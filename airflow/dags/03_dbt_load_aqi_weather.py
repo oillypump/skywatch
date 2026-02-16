@@ -3,6 +3,7 @@ from trino.dbapi import connect
 from datetime import datetime
 from airflow.datasets import Dataset
 from airflow.providers.standard.operators.bash import BashOperator
+from airflow.models.baseoperator import cross_downstream
 
 
 AQI_SILVER = Dataset("s3a://lakehouse/silver/aqi_index")
@@ -20,6 +21,21 @@ def weather_aqi_pipeline():
     """
     LAYER : GOLD
     """
+    run_snapshot_city = BashOperator(
+        task_id="run_snapshot_city",
+        bash_command="""
+        cd /opt/airflow/dbt/skywatch_transform && \
+        dbt snapshot --select scd_city --profiles-dir ..
+        """,
+    )
+
+    run_snapshot_aqi = BashOperator(
+        task_id="run_snapshot_aqi",
+        bash_command="""
+        cd /opt/airflow/dbt/skywatch_transform && \
+        dbt snapshot --select scd_aqi --profiles-dir ..
+        """,
+    )
 
     dbt_dim_city = BashOperator(
         task_id="dbt_dim_city",
@@ -47,7 +63,12 @@ def weather_aqi_pipeline():
 
     # Flow DAG
 
-    [dbt_dim_city, dbt_dim_aqi] >> dbt_fact_aqi_weather
+    (
+        run_snapshot_city
+        >> run_snapshot_aqi
+        >> [dbt_dim_city, dbt_dim_aqi]
+        >> dbt_fact_aqi_weather
+    )
 
 
 # Inisialisasi DAG

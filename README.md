@@ -163,9 +163,11 @@ Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query a
 2. start all service
 
    it took a while to pull and build all image, so please be patient, depends on your internet connection and computer spec, it can take around 5-15 minutes to pull and build all image.
+   this airflow assume local linux user id : 1000. if your user use another id please make it sure you use the same user id.
 
    ```bash
    docker compose pull && docker compose build --no-cache
+   chmod -R 775 airflow/
    docker compose run airflow-cli airflow config list
    docker compose up airflow-init
    docker compose up -d
