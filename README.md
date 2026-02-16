@@ -1,10 +1,10 @@
-# 🌍 Indonesia Air Quality & Weather Monitoring System
+# Indonesia Air Quality & Weather Monitoring System
 
 Sistem pemantauan kualitas udara dan prakiraan cuaca otomatis untuk kota-kota besar di Indonesia menggunakan arsitektur Modern Data Stack.
 
 ---
 
-## 📌 1. Project Overview & Problem Statement
+## 1. Project Overview & Problem Statement
 
 ### **Problem**
 
@@ -12,7 +12,7 @@ Kualitas udara dan cuaca di Indonesia belakangan ini menjadi sangat fluktuatif. 
 
 ### **Goals**
 
-Project ini bertujuan untuk membangun pipeline data otomatis guna memonitor **Air Quality Index (AQI)** dan **Weather Forecast** secara _bathcing_ maupun prediksi beberapa hari ke depan di berbagai wilayah Indonesia.
+Project ini bertujuan untuk membangun pipeline data otomatis guna memonitor **Air Quality Index (AQI)** dan **Weather Forecast** secara _bathcing_ dari source data beberapa wilayah Indonesia.
 
 ### **Data Source**
 
@@ -33,10 +33,62 @@ Project ini berjalan sepenuhnya di atas **Docker** untuk memastikan skalabilitas
 | **Table Format**   | **Apache Iceberg** | Mendukung ACID transaksi dan _time travel_ pada Data Lake.  |
 | **BI Tools**       | **Metabase**       | Visualisasi dashboard dan monitoring kualitas udara.        |
 | **Database**       | **Postgres**       | Database metadata untuk Airflow, Hive, dan Metabase.        |
+| **Transform**      | **dbt**            | Transformasi data menggunakan SQL dan Python.               |
 
 ---
 
-## 🟢 Data Ingestion (Bronze Layer)
+## Data Pipeline Architecture
+
+A **data pipeline** is a series of data processing steps that move data from source systems to a destination, such as a data warehouse or data lake. The pipeline typically includes stages for data ingestion, transformation, and loading (ETL). In this project, we have implemented a data pipeline that extracts air quality and weather forecast data from a web source, processes it, and stores it in a structured format for analysis and visualization.
+
+```mermaid
+graph LR
+    subgraph "External Sources (Indonesia Air Quality & Weather Data)"
+        API["Weather & AQI API"]
+    end
+
+    subgraph "Bronze Layer (Raw)"
+        direction TB
+        B1[(raw_aqi_index)]
+        B2[(raw_weather_forecast)]
+    end
+
+    subgraph "Silver Layer (Cleansed)"
+        direction TB
+        S1[(aqi_index)]
+        S2[(forecast_weather)]
+    end
+
+    subgraph "Gold Layer (Analytics)"
+        G1[(fact_aqi_weather)]
+        G2[(dim_city)]
+        G3[(dim_aqi)]
+    end
+
+    %% Flow dari API ke Bronze
+    API -->|"Scraper (Python/Airflow)"| B1
+    API -->|"Scraper (Python/Airflow)"| B2
+
+    %% Flow dari Bronze ke Silver
+    B1 -->|"dbt run (Incremental/Merge)"| S1
+    B2 -->|"dbt run (Incremental/Merge)"| S2
+
+    %% Flow dari Silver ke Gold
+    S1 -->|"dbt Join & Aggregation"| G1
+    S2 -->|"dbt Join & Aggregation"| G1
+    G2 -.->|Lookup| G1
+    G3 -.->|Lookup| G1
+
+    %% Styling
+    style API fill:#f9f,stroke:#333,stroke-width:2px
+    style B1 fill:#ff9,stroke:#333
+    style B2 fill:#ff9,stroke:#333
+    style S1 fill:#9f9,stroke:#333
+    style S2 fill:#9f9,stroke:#333
+    style G1 fill:#f96,stroke:#333,stroke-width:4px
+```
+
+## Data Ingestion (Bronze Layer)
 
 Proses _data ingestion_ pada tahap Bronze dilakukan dengan mengekstraksi data dari dua objek utama melalui metode _scraping_. Pipeline ini berjalan secara otomatis dengan interval **10 menit** menggunakan DAG: [`load_bronze`](./airflow/dags/01_bronze_load_aqi_weather.py).
 
@@ -76,29 +128,24 @@ Objek ini menyimpan data prakiraan (forecast) cuaca dan kualitas udara untuk beb
 > ### 💡 Note
 >
 > Data pada Bronze Layer disimpan dalam format _raw_ (asli) untuk menjaga integritas data sebelum dilakukan transformasi lebih lanjut pada **Silver Layer**.
+>
+> Script _scraping_ dijalankan setiap 10 menit untuk memastikan data yang diambil selalu up-to-date, dengan catatan bahwa data prakiraan (forecast) biasanya diperbarui setiap beberapa jam sekali oleh penyedia data.
+>
+> Airflow DAG: [`load_bronze`](./airflow/dags/01_bronze_load_aqi_weather.py)
 
 ---
 
-### 🛠️ Tech Stack & Tools
+## Data Transformation (Silver Layer)
 
-| Process            | Technology                                                              |
-| :----------------- | :---------------------------------------------------------------------- |
-| **BeautifulSoup4** | Web Scrapper                                                            |
-| **Storage Format** | Apache Iceberg                                                          |
-| **SQL Engine**     | Trino SQL                                                               |
-| **Object Storage** | Minio                                                                   |
-| **Data Catalog**   | Hive Metastore                                                          |
-| **Orchestration**  | Airflow DAG: [`load_bronze`](./airflow/dags/01_silver_transform_aqi.py) |
-
-## 🥈 Data Transformation (Silver Layer)
-
-Tahap Silver Layer bertujuan untuk membersihkan, memvalidasi, dan menstandarisasi data dari Bronze Layer. Proses ini memastikan bahwa data yang akan masuk ke tahap pemodelan (Gold) memiliki kualitas tinggi dan konsisten.
+Tahap Silver Layer bertujuan untuk membersihkan, memvalidasi, dan menstandarisasi data dari Bronze Layer. Proses ini memastikan bahwa data yang akan masuk ke tahap pemodelan (Gold) memiliki kualitas tinggi dan konsisten. Pada silver layer menggunakan dbt dengan strategi _merge_ pada tabel Apache Iceberg untuk memastikan tidak ada duplikasi data.
 
 ---
 
 ### 1. De-duplication (Penghapusan Duplikasi)
 
-Mengingat data diambil setiap 10 menit melalui proses _scraping_, terdapat potensi tumpang tindih (_overlap_) data.
+Mengingat data diambil setiap 10 menit melalui proses _scraping_, terdapat potensi tumpang tindih (_overlap_) data. Maka dilakukan proses load ke silver dengan strategi _upsert_ (update + insert) untuk memastikan tidak ada duplikasi data: menggukanan dbt dengan strategi _merge_ pada tabel Apache Iceberg.
+
+---
 
 - **Logika:** Melakukan _drop duplicates_ berdasarkan kombinasi kunci unik:
   - **AQI:** `city` + `observation_time`.
@@ -123,23 +170,13 @@ Mengubah tipe data kolom dari format _string_ (hasil scraping) ke tipe data yang
 
 ---
 
-### 🛠️ Tech Stack & Tools
-
-| Process            | Technology                                                                   |
-| :----------------- | :--------------------------------------------------------------------------- |
-| **Storage Format** | Apache Iceberg                                                               |
-| **SQL Engine**     | Trino SQL                                                                    |
-| **Object Storage** | Minio                                                                        |
-| **Data Catalog**   | Hive Metastore                                                               |
-| **Orchestration**  | Airflow DAG: [`transform_silver`](./airflow/dags/02_silver_transform_aqi.py) |
-
-> ### 📌 Data Lineage
+> ### 💡 Note
 >
-> Data yang telah melalui proses ini akan disimpan ke dalam namespace `iceberg.silver` sebelum diagregasikan ke dalam tabel fakta dan dimensi di **Gold Layer**.
+> Airflow DAG: [`load_staging`](./airflow/dags/02_dbt_load_aqi_weather.py)
 
 ---
 
-## 🥇 Data Modeling (Gold Layer)
+## Data Modeling (Gold Layer)
 
 Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query analisis yang optimal. Proses ini dijalankan otomatis menggunakan **Airflow Datasets** dan **Trino SQL**.
 
@@ -155,19 +192,13 @@ Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query a
 
 ---
 
-### 🛠️ Tech Stack & Tools
-
-| Process            | Technology                                                                 |
-| :----------------- | :------------------------------------------------------------------------- |
-| **Storage Format** | Apache Iceberg                                                             |
-| **SQL Engine**     | Trino SQL                                                                  |
-| **Object Storage** | Minio                                                                      |
-| **Data Catalog**   | Hive Metastore                                                             |
-| **Orchestration**  | Airflow DAG: [`transform_gold`](./airflow/dags/03_silver_transform_aqi.py) |
+> ### 💡 Note
+>
+> Airflow DAG: [`load_staging`](./airflow/dags/03_dbt_load_aqi_weather.py)
 
 ---
 
-## Re-Populate
+## How to Re-Populate
 
 1. **Clone Repository:**
 
@@ -178,6 +209,8 @@ Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query a
 
 2. start all service
 
+   it took a while to pull and build all image, so please be patient, depends on your internet connection and computer spec, it can take around 5-15 minutes to pull and build all image.
+
    ```bash
    docker compose pull && docker compose build --no-cache
    docker compose run airflow-cli airflow config list
@@ -185,48 +218,64 @@ Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query a
    docker compose up -d
    ```
 
-## Access
+3. Login to Airflow UI,
+   enable dan trigger DAG
+   - [`01_bronze_load_aqi_weather`](./airflow/dags/01_bronze_load_aqi_weather.py) untuk memulai proses ingest data dari source.
+   - [`02_dbt_load_aqi_weather`](./airflow/dags/02_dbt_load_aqi_weather.py) untuk memulai proses transformasi data ke silver layer.
+   - [`03_dbt_load_aqi_weather`](./airflow/dags/03_dbt_load_aqi_weather.py) untuk memulai proses modeling data ke gold layer.
 
-1. metabase
+   ```
+   url : http://localhost:8181
+   user : airflowuser
+   pass : airflowuser
+   ```
+
+   example Airflow UI:
+
+   ![Airflow UI](./pics/airflow_ui.png)
+
+4. Setelah beberapa saat, buka dashboard Metabase untuk melihat hasil visualisasi data kualitas udara dan prakiraan cuaca.
+
    ```
    url  : http://localhost:3000
    user : admin@email.com
    pass : Admin1234
    ```
-2. airflow
-   ```
-   url  : http://localhost:8181
-   user : airflowuser
-   pass : airflowuser
-   ```
-3. trino
+
+   example dashboard Metabase:
+
+   ![Metabase UI](./pics/metabase_ui.png)
+
+5. Acces Trino with Dbeaver
+
    ```
    url  : http://localhost:8080
    user : admin
    pass :
    ```
 
-### remove all
+   example connection Trino di Dbeaver:
+
+   ![Trino_dbeaver](./pics/trino_dbeaver.png)
+
+---
+
+## How to remove all image, container, volume, network
 
 ```
 docker compose down -v --remove-orphans --rmi all
 ```
 
-#### project directory
+---
+
+## Appendix
+
+### project tree
+
+[Project tree](./project-tree.md)
+
+### project hash 8aeaaf009dda8089d406b7f6ebed399b42a0a135
 
 ```
-skywatch
-├─airflow
-| ├──dags
-| ├──config
-| ├──logs
-| ├──dbt
-| └──plugins
-├─dcoker-configs
-```
-
-#### project hash 8aeaaf009dda8089d406b7f6ebed399b42a0a135
-
-```
-
+8aeaaf009dda8089d406b7f6ebed399b42a0a135
 ```
