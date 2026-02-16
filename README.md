@@ -41,53 +41,6 @@ Project ini berjalan sepenuhnya di atas **Docker** untuk memastikan skalabilitas
 
 A **data pipeline** is a series of data processing steps that move data from source systems to a destination, such as a data warehouse or data lake. The pipeline typically includes stages for data ingestion, transformation, and loading (ETL). In this project, we have implemented a data pipeline that extracts air quality and weather forecast data from a web source, processes it, and stores it in a structured format for analysis and visualization.
 
-```mermaid
-graph LR
-    subgraph "External Sources (Indonesia Air Quality & Weather Data)"
-        API["Weather & AQI API"]
-    end
-
-    subgraph "Bronze Layer (Raw)"
-        direction TB
-        B1[(raw_aqi_index)]
-        B2[(raw_weather_forecast)]
-    end
-
-    subgraph "Silver Layer (Cleansed)"
-        direction TB
-        S1[(aqi_index)]
-        S2[(forecast_weather)]
-    end
-
-    subgraph "Gold Layer (Analytics)"
-        G1[(fact_aqi_weather)]
-        G2[(dim_city)]
-        G3[(dim_aqi)]
-    end
-
-    %% Flow dari API ke Bronze
-    API -->|"Scraper (Python/Airflow)"| B1
-    API -->|"Scraper (Python/Airflow)"| B2
-
-    %% Flow dari Bronze ke Silver
-    B1 -->|"dbt run (Incremental/Merge)"| S1
-    B2 -->|"dbt run (Incremental/Merge)"| S2
-
-    %% Flow dari Silver ke Gold
-    S1 -->|"dbt Join & Aggregation"| G1
-    S2 -->|"dbt Join & Aggregation"| G1
-    G2 -.->|Lookup| G1
-    G3 -.->|Lookup| G1
-
-    %% Styling
-    style API fill:#f9f,stroke:#333,stroke-width:2px
-    style B1 fill:#ff9,stroke:#333
-    style B2 fill:#ff9,stroke:#333
-    style S1 fill:#9f9,stroke:#333
-    style S2 fill:#9f9,stroke:#333
-    style G1 fill:#f96,stroke:#333,stroke-width:4px
-```
-
 ## Data Ingestion (Bronze Layer)
 
 Proses _data ingestion_ pada tahap Bronze dilakukan dengan mengekstraksi data dari dua objek utama melalui metode _scraping_. Pipeline ini berjalan secara otomatis dengan interval **10 menit** menggunakan DAG: [`load_bronze`](./airflow/dags/01_bronze_load_aqi_weather.py).
