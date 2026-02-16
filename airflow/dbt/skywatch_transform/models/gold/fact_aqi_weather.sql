@@ -2,9 +2,10 @@
     materialized='incremental',
     incremental_strategy='merge',
     unique_key='fact_id',
-    type='iceberg',
-    partitioning=['city_id', 'day(event_ts)'],
-    sorted_by=['event_ts']
+    properties={
+        "partitioning": "ARRAY['city_id', 'day(event_ts)']",
+        "sorted_by": "ARRAY['event_ts']"
+    }
 ) }}
 
 WITH source_data AS (
@@ -29,7 +30,7 @@ WITH source_data AS (
         COALESCE(a.scraped_ts, f.scraped_ts) as scraped_ts,
         f.observation_ts 
     FROM {{ source('silver', 'aqi_index') }} a
-    FULL OUTER JOIN {{ source('silver', 'forecast_weather') }} f
+    FULL OUTER JOIN {{ source('silver', 'weather_forecast') }} f
         ON a.city = f.city AND a.event_ts = f.forecast_ts
     
     {% if is_incremental() %}
@@ -47,9 +48,9 @@ deduplicated AS (
 )
 
 SELECT 
-    to_hex(md5(to_utf8(s.city || cast(s.event_ts as varchar)))) as fact_id,
-    s.event_ts,
     c.id as city_id,
+    s.event_ts,
+    to_hex(md5(to_utf8(s.city || cast(s.event_ts as varchar)))) as fact_id,
     COALESCE(s.act_aqi, s.fc_aqi) as aqi,
     a.id as aqi_id,
     COALESCE(s.act_weather_condition, s.fc_weather_condition) as weather_condition,

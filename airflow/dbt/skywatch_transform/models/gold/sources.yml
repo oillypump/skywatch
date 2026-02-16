@@ -5,4 +5,4 @@ sources:
     schema: silver
     tables:
       - name: aqi_index
-      - name: forecast_weather
+      - name: weather_forecast
