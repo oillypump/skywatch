@@ -1,17 +1,7 @@
-from airflow.sdk import dag, task
-from trino.dbapi import connect
+from airflow.sdk import dag
 from datetime import datetime
 from airflow.datasets import Dataset
 from airflow.providers.standard.operators.bash import BashOperator
-
-
-# --- KONFIGURASI HARDCODE ---
-TRINO_CONFIG = {
-    "host": "trino",
-    "port": 8080,
-    "user": "admin",
-    "catalog": "iceberg",
-}
 
 AQI_BRONZE = Dataset("s3a://lakehouse/bronze/raw_aqi_index")
 FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")

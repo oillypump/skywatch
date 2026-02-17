@@ -9,7 +9,17 @@
     }
 ) }}
 
-with source as (
+
+-- 1. Hitung threshold secara independen
+with incremental_threshold as (
+    {% if is_incremental() %}
+    select max(scraped_ts) - interval '2' day as limit_ts from {{ this }}
+    {% else %}
+    select timestamp '2020-01-01 00:00:00' as limit_ts
+    {% endif %}
+),
+
+source as (
     select 
     	coalesce(a.province ,w.province ) as province ,
     	coalesce(a.city , w.city ) as city,
@@ -34,9 +44,8 @@ with source as (
     from  {{ source('silver', 'aqi_index') }} a
     full outer join {{ source('silver', 'weather_forecast') }} w
     on a.city = w.city AND a.event_ts = w.forecast_ts 
-    {% if is_incremental() %}
-    WHERE coalesce(w.forecast_ts, a.event_ts) >= (SELECT MAX(event_ts) - INTERVAL '7' DAY FROM {{ this }})
-    {% endif %}
+    cross join incremental_threshold it
+    where coalesce(w.forecast_ts, a.event_ts) >= it.limit_ts
 ),
 deduplicated as (
 	select *,

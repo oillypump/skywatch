@@ -1,5 +1,4 @@
-from airflow.sdk import dag, task
-from trino.dbapi import connect
+from airflow.sdk import dag
 from datetime import datetime
 from airflow.datasets import Dataset
 from airflow.providers.standard.operators.bash import BashOperator
@@ -21,30 +20,6 @@ def weather_aqi_pipeline():
     """
     LAYER : GOLD
     """
-    run_snapshot_city = BashOperator(
-        task_id="run_snapshot_city",
-        bash_command="""
-        cd /opt/airflow/dbt/skywatch_transform && \
-        dbt snapshot --select scd_city --profiles-dir ..
-        """,
-    )
-
-    run_snapshot_aqi = BashOperator(
-        task_id="run_snapshot_aqi",
-        bash_command="""
-        cd /opt/airflow/dbt/skywatch_transform && \
-        dbt snapshot --select scd_aqi --profiles-dir ..
-        """,
-    )
-
-    run_snapshot_date = BashOperator(
-        task_id="run_snapshot_date",
-        bash_command="""
-        cd /opt/airflow/dbt/skywatch_transform && \
-        dbt snapshot --select scd_date --profiles-dir ..
-        """,
-    )
-
     dbt_dim_city = BashOperator(
         task_id="dbt_dim_city",
         bash_command="""
@@ -79,13 +54,7 @@ def weather_aqi_pipeline():
 
     # Flow DAG
 
-    (
-        run_snapshot_city
-        >> run_snapshot_aqi
-        >> run_snapshot_date
-        >> [dbt_dim_city, dbt_dim_aqi, dbt_dim_date]
-        >> dbt_fact_aqi_weather
-    )
+    [dbt_dim_city, dbt_dim_aqi, dbt_dim_date, dbt_fact_aqi_weather]
 
 
 # Inisialisasi DAG

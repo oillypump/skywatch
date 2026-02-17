@@ -12,9 +12,6 @@ from pyiceberg.catalog import load_catalog
 import re
 from airflow.datasets import Dataset
 
-# from botocore.client import Config
-# import io
-# import boto3
 
 AQI_BRONZE = Dataset("s3a://lakehouse/bronze/raw_aqi_index")
 FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
@@ -204,7 +201,7 @@ def air_quality_and_forecast_weather():
                 except Exception as e:
                     print(f"[!] Error parsing item for {city}: {e}")
 
-                time.sleep(5)
+                time.sleep(2)
 
         # Output ke log Airflow sebagai Tabel
         if not current_data:
@@ -389,7 +386,7 @@ def air_quality_and_forecast_weather():
                 except Exception as e:
                     print(f"Error connecting to {city}: {e}")
 
-                time.sleep(5)
+                time.sleep(2)
 
         if not all_forecasts:
             return "No Data Scraped"
@@ -434,8 +431,7 @@ def air_quality_and_forecast_weather():
         table.append(arrow_table)
         return f"🚀 Done! {len(all_forecasts)} rows added to {table_id}"
 
-    extract_aqi()
-    extract_forecast_weather()
+    [extract_aqi(), extract_forecast_weather()]
 
 
 dag_obj = air_quality_and_forecast_weather()
