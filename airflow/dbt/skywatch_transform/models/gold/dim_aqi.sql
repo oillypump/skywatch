@@ -1,4 +1,6 @@
 {{ config(
+    materialized='incremental',
+    incremental_strategy='merge',
     unique_key='id',
     type='iceberg'
 ) }}
@@ -33,8 +35,7 @@ SELECT
     {% else %}
         CAST(current_timestamp AT TIME ZONE 'Asia/Jakarta' AS TIMESTAMP) as created_at,
     {% endif %}
-    -- updated_at: Selalu diperbarui ke waktu sekarang setiap ada merge/run
-    CAST(current_timestamp AT TIME ZONE 'Asia/Jakarta' AS TIMESTAMP) as updated_at
+        CAST(current_timestamp AT TIME ZONE 'Asia/Jakarta' AS TIMESTAMP) as updated_at
 FROM final_source s
 {% if is_incremental() %}
     LEFT JOIN {{ this }} t ON s.id = t.id
