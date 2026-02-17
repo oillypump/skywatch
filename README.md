@@ -213,6 +213,18 @@ Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query a
 
    ![Trino_dbeaver](./pics/trino_dbeaver.png)
 
+6. access Minio with browser
+
+   ```
+   url  : http://localhost:9001
+   user : minioadmin
+   pass : minioadmin
+   ```
+
+   example browsing minio:
+
+   ![Minio UI](./pics/minio_ui.png)
+
 ---
 
 ## How to remove all image, container, volume, network

@@ -1,20 +1,20 @@
 from airflow.sdk import dag, task
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 import pyarrow as pa
 import time
 import yaml
 import requests
 from bs4 import BeautifulSoup
-from datetime import timedelta
 import os
-import io
-import boto3
-from botocore.client import Config
 import pendulum
 from pyiceberg.catalog import load_catalog
 import re
 from airflow.datasets import Dataset
+
+# from botocore.client import Config
+# import io
+# import boto3
 
 AQI_BRONZE = Dataset("s3a://lakehouse/bronze/raw_aqi_index")
 FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
@@ -23,7 +23,6 @@ FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
 @dag(
     dag_id="01_bronze_load_aqi_weather",
     schedule="*/10 * * * *",
-    # schedule="5,35 * * * *",
     start_date=datetime(2026, 1, 1),
     catchup=False,
     max_active_runs=1,

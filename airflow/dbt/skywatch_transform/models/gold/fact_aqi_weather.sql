@@ -4,8 +4,8 @@
     unique_key='id',
     type='iceberg',
     properties={
-        "partitioning": "ARRAY['day(event_ts)']",
-        "sorted_by": "ARRAY['city_id', 'event_ts']"
+        "partitioning": "ARRAY['city_id'] ",
+        "sorted_by": "ARRAY['date_id']"
     }
 ) }}
 
@@ -13,7 +13,7 @@ with source as (
     select 
     	coalesce(a.province ,w.province ) as province ,
     	coalesce(a.city , w.city ) as city,
-    	coalesce(w.forecast_ts, a.event_ts ) as event_nih,
+    	coalesce(w.forecast_ts, a.event_ts ) as event_ts,
     	a.aqi_val as act_aqi,
         w.aqi_val as fc_aqi,
         a.aqi_status,
@@ -35,21 +35,21 @@ with source as (
     full outer join {{ source('silver', 'weather_forecast') }} w
     on a.city = w.city AND a.event_ts = w.forecast_ts 
     {% if is_incremental() %}
-    WHERE coalesce(w.forecast_ts, a.event_ts) >= (SELECT MAX(event_ts) - INTERVAL '2' DAY FROM {{ this }})
+    WHERE coalesce(w.forecast_ts, a.event_ts) >= (SELECT MAX(event_ts) - INTERVAL '7' DAY FROM {{ this }})
     {% endif %}
 ),
 deduplicated as (
 	select *,
 		row_number() over (
-		partition by city, event_nih
+		partition by city, event_ts
 		order by scraped_ts ) as rn
 	from source
 )
 select
-	to_hex(md5(to_utf8(s.city|| cast(s.event_nih as varchar)))) as id,
-	event_nih as event_ts,
-	c.id as city_id,
-	a.id as aqi_id,
+	to_hex(md5(to_utf8(s.city|| cast(s.event_ts as varchar)))) as id,
+    to_hex(md5(to_utf8(city))) as city_id,
+	to_hex(md5(to_utf8(aqi_status))) as aqi_id,
+	CAST(format_datetime(event_ts, 'yyyyMMddHH') AS BIGINT) as date_id,
 	coalesce(s.fc_aqi,s.act_aqi) as aqi,
 	coalesce(s.fc_weather_condition ,s.act_weather_condition ) as weather_condition,
 	COALESCE(s.fc_temp_val, s.act_temp_val) as temp_val,
@@ -62,9 +62,5 @@ select
     s.scraped_ts as scraped_ts,
     s.observation_ts 
 from deduplicated s
-left join {{ ref('dim_aqi') }} a
-	on coalesce(s.fc_aqi,s.act_aqi) BETWEEN a.min_val AND a.max_val
-left join {{ ref('dim_city') }} c
-	on s.city = c.city 
 WHERE s.rn = 1
 ORDER BY event_ts DESC
