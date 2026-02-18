@@ -15,8 +15,8 @@ WITH cleaned_source AS (
         LOWER(TRIM(city)) as city,
 		CAST(forecast_ts AS TIMESTAMP) as forecast_ts,
 		CAST(parse_datetime(
-            format_datetime(CAST(scraped_at AS TIMESTAMP), 'yyyy-MM-dd') || ' ' || 
-            split_part(observation_time, ',', 1), 
+            format_datetime(CAST(scraped_ts AS TIMESTAMP), 'yyyy-MM-dd') || ' ' || 
+            split_part(observation_ts, ',', 1), 
             'yyyy-MM-dd HH:mm'
         ) AS TIMESTAMP) as observation_ts,
         CAST(aqi AS INTEGER) as aqi_val,
@@ -24,7 +24,7 @@ WITH cleaned_source AS (
         CAST(regexp_replace(temperature, '[^\d.-]', '') AS DOUBLE) as temp_val,
         CAST(regexp_replace(wind_speed, '[^\d.-]', '') AS DOUBLE) as wind_val,
         CAST(regexp_replace(humidity, '[^\d.-]', '') AS INTEGER) as humidity_val,
-        CAST(scraped_at AS TIMESTAMP) as scraped_ts
+        CAST(scraped_ts AS TIMESTAMP) as scraped_ts
     FROM {{source('bronze', 'raw_weather_forecast') }}
 ),
 deduplicated AS (

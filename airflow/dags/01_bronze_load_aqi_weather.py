@@ -87,7 +87,7 @@ def air_quality_and_forecast_weather():
                 # Inisialisasi variabel (Default N/A)
                 aqi_val = aqi_stat = pollutant = conc = temp = wind = hum = (
                     wind_direction
-                ) = weather_desc = observation_time = "N/A"
+                ) = weather_desc = observation_ts = "N/A"
                 alert_text = "No Alert"
 
                 try:
@@ -167,7 +167,7 @@ def air_quality_and_forecast_weather():
                     h2_element = soup.find("h2")
                     if h2_element and "•" in h2_element.get_text():
                         try:
-                            observation_time = (
+                            observation_ts = (
                                 h2_element.get_text(strip=True)
                                 .split("•")[-1]
                                 .replace("Local time", "")
@@ -191,8 +191,8 @@ def air_quality_and_forecast_weather():
                             "wind_speed": wind,
                             "wind_direction": wind_direction,
                             "alert": alert_text,
-                            "observation_time": observation_time,
-                            "scraped_at": datetime.now(local_tz).strftime(
+                            "observation_ts": observation_ts,
+                            "scraped_ts": datetime.now(local_tz).strftime(
                                 "%Y-%m-%d %H:%M:%S"
                             ),
                         }
@@ -287,7 +287,6 @@ def air_quality_and_forecast_weather():
                         forecast_items = forecast_table.find_all("td")
                         tracking_date = datetime.now(local_tz)
                         last_hour = -1
-                        ingest_ts = datetime.now(local_tz).strftime("%Y-%m-%d %H:%M:%S")
 
                         for item in forecast_items:
                             try:
@@ -356,7 +355,7 @@ def air_quality_and_forecast_weather():
                                 h2_element = soup.find("h2")
                                 if h2_element and "•" in h2_element.get_text():
                                     try:
-                                        observation_time = (
+                                        observation_ts = (
                                             h2_element.get_text(strip=True)
                                             .split("•")[-1]
                                             .replace("Local time", "")
@@ -377,8 +376,10 @@ def air_quality_and_forecast_weather():
                                         "temperature": temp,
                                         "wind_speed": wind,
                                         "humidity": hum,
-                                        "observation_time": observation_time,
-                                        "scraped_at": ingest_ts,
+                                        "observation_ts": observation_ts,
+                                        "scraped_ts": datetime.now(local_tz).strftime(
+                                            "%Y-%m-%d %H:%M:%S"
+                                        ),
                                     }
                                 )
                             except Exception as e:

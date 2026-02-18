@@ -15,7 +15,7 @@ WITH cleaned_source AS (
         LOWER(TRIM(city)) as city,
         CAST(
             parse_datetime(
-                observation_time || ', ' || CAST(year(CAST(scraped_at AS TIMESTAMP)) AS VARCHAR), 
+                observation_ts || ', ' || CAST(year(CAST(scraped_ts AS TIMESTAMP)) AS VARCHAR), 
                 'HH:mm, MMM dd, yyyy'
             ) AS TIMESTAMP
         ) as event_ts,                    
@@ -29,7 +29,7 @@ WITH cleaned_source AS (
         CAST(regexp_replace(wind_speed, '[^\d.-]', '') AS DOUBLE) as wind_val,        
         wind_direction as wind_dir,
         alert as alert,
-        CAST(scraped_at AS TIMESTAMP) as scraped_ts
+        CAST(scraped_ts AS TIMESTAMP) as scraped_ts
     FROM {{ source('bronze', 'raw_aqi_index') }}
 ),
 deduplicated AS (
