@@ -1,153 +1,159 @@
 # Indonesia Air Quality & Weather Monitoring System
 
-Sistem pemantauan kualitas udara dan prakiraan cuaca otomatis untuk kota-kota besar di Indonesia menggunakan arsitektur Modern Data Stack.
-
----
+An automated air quality monitoring and weather forecasting system for major cities in Indonesia, built using a Modern Data Stack architecture.
 
 ## 1. Project Overview & Problem Statement
 
 ### **Problem**
 
-Kualitas udara dan cuaca di Indonesia belakangan ini menjadi sangat fluktuatif. Munculnya fenomena cuaca ekstrem seperti banjir, tanah longsor, hingga polusi udara yang tinggi memerlukan sistem pemantauan yang andal dan berkelanjutan.
+Air quality and weather patterns in Indonesia have recently become highly volatile. The emergence of extreme weather phenomena—such as flash floods, landslides, and hazardous air pollution levels—demands a reliable, continuous monitoring system.
 
 ### **Goals**
 
-Project ini bertujuan untuk membangun pipeline data otomatis guna memonitor **Air Quality Index (AQI)** dan **Weather Forecast** secara _bathcing_ dari source data beberapa wilayah Indonesia.
+This project aims to build an automated data pipeline to monitor the Air Quality Index (AQI) and Weather Forecasts via batch processing across multiple regions in Indonesia.
 
 ### **Data Source**
 
-Data diperoleh melalui metode _web scraping_ dari [IQAir Indonesia](https://www.iqair.com/indonesia).
+Data is obtained through web scraping from [IQAir Indonesia](https://www.iqair.com/indonesia).
 
 ---
 
-## 🛠️ 2. Tech Stack & Environment
+## 2. Tech Stack & Environment
 
-Project ini berjalan sepenuhnya di atas **Docker** untuk memastikan skalabilitas dan kemudahan replikasi environment lokal.
+The project is fully containerized using Docker to ensure scalability and easy replication of the local environment.
 
-| Komponen           | Teknologi          | Peran / Deskripsi                                           |
-| :----------------- | :----------------- | :---------------------------------------------------------- |
-| **Orchestrator**   | **Apache Airflow** | Menjalankan scheduling pipeline (Bronze, Silver, Gold).     |
-| **Query Engine**   | **Trino**          | Mesin SQL untuk memproses data dari Data Lake secara cepat. |
-| **Object Storage** | **Minio**          | Storage utama (S3-compatible) untuk menyimpan file data.    |
-| **Data Catalog**   | **Hive Metastore** | Pengelola metadata tabel untuk integrasi Trino & Iceberg.   |
-| **Table Format**   | **Apache Iceberg** | Mendukung ACID transaksi dan _time travel_ pada Data Lake.  |
-| **BI Tools**       | **Metabase**       | Visualisasi dashboard dan monitoring kualitas udara.        |
-| **Database**       | **Postgres**       | Database metadata untuk Airflow, Hive, dan Metabase.        |
-| **Transform**      | **dbt**            | Transformasi data menggunakan SQL dan Python.               |
+| Komponen           | Tech               | Desc                                                             |
+| :----------------- | :----------------- | :--------------------------------------------------------------- |
+| **Orchestrator**   | **Apache Airflow** | Schedules and manages pipeline execution (Bronze, Silver, Gold). |
+| **Query Engine**   | **Trino**          | SQL engine for high-speed processing of Data Lake data.          |
+| **Object Storage** | **Minio**          | Primary S3-compatible storage for data files.                    |
+| **Data Catalog**   | **Hive Metastore** | Manages table metadata for Trino & Iceberg integration.          |
+| **Table Format**   | **Apache Iceberg** | Supports ACID transactions and time travel in the Data Lake.     |
+| **BI Tools**       | **Metabase**       | Dashboard visualization and air quality monitoring.              |
+| **Database**       | **Postgres**       | Metadata database for Airflow, Hive, and Metabase.               |
+| **Transform**      | **dbt**            | Data transformation using SQL and Python.                        |
 
 ---
 
-## Data Pipeline Architecture
+## 3. Data Flow Architecture
 
 A **data pipeline** is a series of data processing steps that move data from source systems to a destination, such as a data warehouse or data lake. The pipeline typically includes stages for data ingestion, transformation, and loading (ETL). In this project, we have implemented a data pipeline that extracts air quality and weather forecast data from a web source, processes it, and stores it in a structured format for analysis and visualization.
 
-## Data Ingestion (Bronze Layer)
+## 4. Data Ingestion (Bronze Layer) [`load_bronze`](./airflow/dags/01_bronze_load_aqi_weather.py)
 
-Proses _data ingestion_ pada tahap Bronze dilakukan dengan mengekstraksi data dari dua objek utama melalui metode _scraping_. Pipeline ini berjalan secara otomatis dengan interval **10 menit** menggunakan DAG: [`load_bronze`](./airflow/dags/01_bronze_load_aqi_weather.py).
+The Bronze Layer ingestion extracts raw data from two primary objects via scraping. The pipeline runs automatically every 10 minutes via the DAG: [`load_bronze`](./airflow/dags/01_bronze_load_aqi_weather.py).
 
----
+1. **Data Air Quality Index**
 
-### 1. Data Air Quality Index (Real-time)
+   Stores current air quality and actual weather conditions at the time of ingestion.
 
-Objek ini menyimpan informasi kualitas udara dan kondisi cuaca aktual pada saat pengambilan data.
+   | Kategori      | Kolom                                      | Deskripsi                                    |
+   | :------------ | :----------------------------------------- | :------------------------------------------- |
+   | **Geo**       | `province`, `city`                         | Administrative location (Province and City). |
+   | **Pollution** | `aqi`, `aqi_status`                        | Air Quality Index value and its category.    |
+   |               | `main_pollutant`, `concentration`          | Dominant pollutant and concentration value.  |
+   | **Weather**   | `weather`, `temperature`                   | General weather conditions and temperature.  |
+   |               | `humidity`, `wind_speed`, `wind_direction` | Humidity, wind speed, and wind direction.    |
+   | **Metadata**  | `alert`                                    | Early warnings regarding air quality.        |
+   |               | `observation_ts`                           | Original observation time from the source.   |
+   |               | `scraped_ts`                               | Timestamp of data ingestion.                 |
 
-| Kategori      | Kolom                                      | Deskripsi                                    |
-| :------------ | :----------------------------------------- | :------------------------------------------- |
-| **Geografis** | `province`, `city`                         | Lokasi administrasi (Provinsi dan Kota).     |
-| **Polusi**    | `aqi`, `aqi_status`                        | Nilai indeks kualitas udara dan kategorinya. |
-|               | `main_pollutant`, `concentration`          | Polutan dominan dan nilai konsentrasinya.    |
-| **Cuaca**     | `weather`, `temperature`                   | Kondisi cuaca umum dan suhu udara.           |
-|               | `humidity`, `wind_speed`, `wind_direction` | Kelembapan, kecepatan, dan arah angin.       |
-| **Metadata**  | `alert`                                    | Peringatan dini terkait kualitas udara.      |
-|               | `observation_time`                         | Waktu observasi asli dari sumber data.       |
-|               | `scraped_at`                               | Timestamp saat data berhasil di-ingest.      |
+2. **Data Weather Forecast**
 
----
+   Stores weather and air quality forecasts for future periods.
 
-### 2. Data Weather Forecast (Prediksi)
-
-Objek ini menyimpan data prakiraan (forecast) cuaca dan kualitas udara untuk beberapa periode ke depan.
-
-| Kategori      | Kolom                     | Deskripsi                                 |
-| :------------ | :------------------------ | :---------------------------------------- |
-| **Geografis** | `province`, `city`        | Lokasi administrasi (Provinsi dan Kota).  |
-| **Prediksi**  | `forecast_ts`             | Target waktu/jam yang diprediksi.         |
-|               | `aqi`, `weather`          | Prediksi nilai AQI dan kondisi cuaca.     |
-| **Parameter** | `temperature`, `humidity` | Prediksi suhu dan kelembapan udara.       |
-|               | `wind_speed`              | Prediksi kecepatan angin.                 |
-| **Metadata**  | `observation_time`        | Waktu rilis data prakiraan oleh provider. |
-|               | `scraped_at`              | Timestamp saat data berhasil di-ingest.   |
+   | Kategori      | Kolom                     | Deskripsi                                    |
+   | :------------ | :------------------------ | :------------------------------------------- |
+   | **Geografis** | `province`, `city`        | Administrative location (Province and City). |
+   | **Prediksi**  | `forecast_ts`             | Target timestamp for the prediction.         |
+   |               | `aqi`, `weather`          | Predicted AQI value and weather condition.   |
+   | **Parameter** | `temperature`, `humidity` | Predicted temperature and humidity.          |
+   |               | `wind_speed`              | Predicted wind speed.                        |
+   | **Metadata**  | `observation_time`        | Original observation time from the source.   |
+   |               | `scraped_at`              | Timestamp of data ingestion                  |
 
 > ### 💡 Note
 >
-> Data pada Bronze Layer disimpan dalam format _raw_ (asli) untuk menjaga integritas data sebelum dilakukan transformasi lebih lanjut pada **Silver Layer**.
->
-> Script _scraping_ dijalankan setiap 10 menit untuk memastikan data yang diambil selalu up-to-date, dengan catatan bahwa data prakiraan (forecast) biasanya diperbarui setiap beberapa jam sekali oleh penyedia data.
->
-> Airflow DAG: [`load_bronze`](./airflow/dags/01_bronze_load_aqi_weather.py)
+> Data in the Bronze Layer is stored in raw format to maintain data integrity before moving to the Silver Layer. The scraper runs every 10 minutes to ensure data freshness. **Silver Layer**.
 
 ---
 
-## Data Transformation (Silver Layer)
+## **5. Data Transformation** (Silver Layer) [`load_staging`](./airflow/dags/02_dbt_load_aqi_weather.py)
 
-Tahap Silver Layer bertujuan untuk membersihkan, memvalidasi, dan menstandarisasi data dari Bronze Layer. Proses ini memastikan bahwa data yang akan masuk ke tahap pemodelan (Gold) memiliki kualitas tinggi dan konsisten. Pada silver layer menggunakan dbt dengan strategi _merge_ pada tabel Apache Iceberg untuk memastikan tidak ada duplikasi data.
+This is where messy, raw data (Bronze) is transformed into clean, structured, and validated data that is ready for analytical modeling.
 
----
+For this project, I implemented two primary dbt models: [**aqi_index**](./airflow/dbt/skywatch_transform/models/silver/aqi_index.sql) and [**weather_forecast**](./airflow/dbt/skywatch_transform/models/silver/weather_forecast.sql). Below are the technical highlights of the transformation process:
 
-### 1. De-duplication (Penghapusan Duplikasi)
+1. **Apache Iceberg**
 
-Mengingat data diambil setiap 10 menit melalui proses _scraping_, terdapat potensi tumpang tindih (_overlap_) data. Maka dilakukan proses load ke silver dengan strategi _upsert_ (update + insert) untuk memastikan tidak ada duplikasi data: menggukanan dbt dengan strategi _merge_ pada tabel Apache Iceberg.
+   Both models leverage the Apache Iceberg table format to provide enterprise-grade features on a Data Lake:
 
----
+   Optimal Partitioning: Data is partitioned by city and day(ts). This enables Partition Pruning, ensuring that dashboard queries don't scan the entire storage (MinIO) but only read the relevant files.
 
-- **Logika:** Melakukan _drop duplicates_ berdasarkan kombinasi kunci unik:
-  - **AQI:** `city` + `observation_time`.
-  - **Forecast:** `city` + `forecast_ts` + `observation_time`.
-- **Tujuan:** Memastikan setiap kejadian (event) hanya tercatat satu kali dalam tabel Silver.
+   Sorted Storage: By using the sorted_by property on event_ts, the storage is optimized for time-series analysis, significantly speeding up trend visualization.
 
-### 2. Data Cleansing (Pembersihan Data)
+   Incremental Merge Strategy: Instead of rebuilding the entire table, dbt identifies new data and performs an Upsert. If a record with a matching ID exists, it updates; otherwise, it inserts. This makes the pipeline highly cost-efficient.
 
-Tahap ini menangani ketidakkonsistenan data mentah:
+2. **Data Cleansing & Casting**
 
-- **Handling Nulls:** Mengisi nilai yang hilang (_missing values_) atau menghapus baris yang tidak memiliki informasi krusial (seperti `aqi` atau `city`).
-- **String Standardization:** Merapikan format teks pada kolom `city` dan `province` (misal: mengubah ke _lowercase_ atau menghapus spasi berlebih).
-- **Filtering:** Memastikan nilai numerik seperti `aqi`, `temperature`, dan `humidity` berada dalam rentang yang masuk akal (logis).
+   Since web-scraped data often arrives as messy strings, I applied rigorous transformations to ensure data integrity:
 
-### 3. Data Type Casting (Penyesuaian Tipe Data)
+   Regex Feature Extraction: I used regexp_replace to strip non-numeric characters (like degree symbols °, units km/h, or %). This converts raw text into proper DOUBLE and INTEGER types for mathematical computation.
 
-Mengubah tipe data kolom dari format _string_ (hasil scraping) ke tipe data yang sesuai untuk kebutuhan komputasi:
+   Complex Date Parsing: I handled varied observation time formats by reconstructing them into standardized TIMESTAMP objects (ISO 8601), ensuring a unified timeline across the system.
 
-- **Timestamps:** Mengonversi `observation_time`, `forecast_ts`, dan `scraped_at` menjadi tipe `TIMESTAMP` (mengikuti zona waktu _Asia/Jakarta_).
-- **Numerik:** Mengonversi kolom seperti `aqi`, `temperature`, dan `humidity` menjadi `INTEGER` atau `DOUBLE`.
-- **Boolean/Categorical:** Menstandarisasi kolom `alert` atau `aqi_status`.
+   Normalization: Using LOWER(TRIM()) on geographic columns (Province/City) prevents data fragmentation caused by inconsistent casing or trailing spaces.
 
----
+3. **Deduplication**
 
-> ### 💡 Note
->
-> Airflow DAG: [`load_staging`](./airflow/dags/02_dbt_load_aqi_weather.py)
+   With a 10-minute scraping interval, data overlap is inevitable. I mitigated this using a two-layered defense:
+
+   Deterministic Unique IDs: A Primary Key is generated via an MD5 Hash of the composite key (city + timestamp). This ensures that a specific observation at a specific location has one, and only one, unique ID.
+
+   Window Function Logic: Using ROW_NUMBER() OVER (PARTITION BY ... ORDER BY scraped_ts DESC), the model identifies duplicate entries and selects only the latest version (rn=1) of the truth.
 
 ---
 
-## Data Modeling (Gold Layer)
+## Data Modeling (Gold Layer)[`load_gold`](./airflow/dags/03_dbt_load_aqi_weather.py)
 
-Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query analisis yang optimal. Proses ini dijalankan otomatis menggunakan **Airflow Datasets** dan **Trino SQL**.
+The Gold Layer is the final destination in our Medallion Architecture. This layer transforms the cleaned Silver data into a specialized Star Schema, designed specifically for high-performance analytics, reporting, and visualization in Metabase.
 
-### **Dimension Tables**
+1. **The Star Schema Design**
 
-- **`dim_city`**: Master data kota dengan ID unik berbasis MD5 hash.
-- **`dim_aqi`**: Tabel referensi kategori kesehatan kualitas udara (Good, Moderate, Unhealthy, dsb).
+   To ensure optimal query performance, the data is modeled into a Star Schema consisting of one central Fact Table and three supporting Dimension Tables.
 
-### **Fact Table**
+   **_The Fact Table_**
 
-- **`fact_aqi_weather`**: Tabel utama yang menggabungkan data aktual dan prediksi.
-- **Optimasi**: Dipartisi berdasarkan `city_id` dan `day(event_ts)` menggunakan Apache Iceberg untuk mempercepat filter waktu pada dashboard.
+   fact_aqi_weather: The centerpiece of the model. It unifies actual observations with forecasted data, providing a single source of truth for both historical and predictive analysis.
 
----
+   **_The Dimension Tables_**
 
-> ### 💡 Note
->
-> Airflow DAG: [`load_staging`](./airflow/dags/03_dbt_load_aqi_weather.py)
+   dim_city: Contains geographical master data (City, Province, Country).
+
+   dim_aqi: A reference table for Air Quality Index thresholds, mapping values to health categories (e.g., Good, Moderate, Unhealthy).
+
+   dim_date: A rich temporal dimension that breaks down time into year, month, day, hour, semester, and weekend flags.
+
+2. **Model Breakdown**
+
+   **_Dim City & Dim AQI_** (SCD Type 1)
+   These models use an Incremental Merge strategy to track audit metadata:
+
+   created_at: Captured when a city or AQI category is first encountered.
+
+   updated_at: Refreshed every time the pipeline runs to ensure the latest status is captured.
+
+   Hashing: IDs are generated using deterministic MD5 hashes for consistent joining across layers.
+
+   **_Dim Date (The Calendar Engine)_**
+   Unlike the others, dim_date is materialized as a Table to ensure flags like is_current_day, is_current_month, and is_current_year are refreshed based on the Asia/Jakarta timezone during every run.
+
+   **_Fact AQI Weather (The Data Core)_**
+   Full Outer Join: Combines aqi_index and weather_forecast to fill gaps where one source might be missing data for a specific timestamp.
+
+   Coalesce Logic: Prioritizes forecast data for future timestamps and actual data for past timestamps to provide a seamless timeline.
+
+   Deduplication: Uses ROW_NUMBER() to ensure only the most recent scrape for any city/timestamp combination makes it into the final model.
 
 ---
 
@@ -160,7 +166,7 @@ Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query a
    cd skywatch
    ```
 
-2. start all service
+2. **start services**
 
    it took a while to pull and build all image, so please be patient, depends on your internet connection and computer spec, it can take around 5-15 minutes to pull and build all image.
    this airflow assume local linux user id : 1000. if your user use another id please make it sure you use the same user id.
@@ -173,55 +179,27 @@ Tahap Gold Layer memodelkan data ke dalam **Star Schema** untuk performa query a
    docker compose up -d
    ```
 
-3. Login to Airflow UI,
-   enable dan trigger DAG
-   - [`01_bronze_load_aqi_weather`](./airflow/dags/01_bronze_load_aqi_weather.py) untuk memulai proses ingest data dari source.
-   - [`02_dbt_load_aqi_weather`](./airflow/dags/02_dbt_load_aqi_weather.py) untuk memulai proses transformasi data ke silver layer.
-   - [`03_dbt_load_aqi_weather`](./airflow/dags/03_dbt_load_aqi_weather.py) untuk memulai proses modeling data ke gold layer.
+3. **Airflow Setup**
 
-   ```
-   url : http://localhost:8181
-   user : airflowuser
-   pass : airflowuser
-   ```
+   Login to Airflow UI (http://localhost:8181), enable, and trigger the following DAGs:
+   - [`01_bronze_load_aqi_weather`](./airflow/dags/01_bronze_load_aqi_weather.py) Start data ingestion.
+   - [`02_dbt_load_aqi_weather`](./airflow/dags/02_dbt_load_aqi_weather.py) Transform data to Silver.
+   - [`03_dbt_load_aqi_weather`](./airflow/dags/03_dbt_load_aqi_weather.py) Model data to Gold.
+
+   Credentials: airflowuser / airflowuser
 
    example Airflow UI:
 
    ![Airflow UI](./pics/airflow_ui.png)
 
-4. Setelah beberapa saat, buka dashboard Metabase untuk melihat hasil visualisasi data kualitas udara dan prakiraan cuaca.
-
-   ```
-   url  : http://localhost:3000
-   user : admin@email.com
-   pass : Admin1234
-   ```
-
-   example dashboard Metabase:
+4. **Monitoring Metabase/Trino/MinIO**
+   - Metabase Dashboard: http://localhost:3000 (admin@email.com / Admin1234)
 
    ![Metabase UI](./pics/metabase_ui.png)
-
-5. Acces Trino with Dbeaver
-
-   ```
-   url  : http://localhost:8080
-   user : admin
-   pass :
-   ```
-
-   example connection Trino di Dbeaver:
+   - Trino (DBeaver): http://localhost:8080 (User: admin)
 
    ![Trino_dbeaver](./pics/trino_dbeaver.png)
-
-6. access Minio with browser
-
-   ```
-   url  : http://localhost:9001
-   user : minioadmin
-   pass : minioadmin
-   ```
-
-   example browsing minio:
+   - MinIO Browser: http://localhost:9001 (minioadmin / minioadmin)
 
    ![Minio UI](./pics/minio_ui.png)
 
