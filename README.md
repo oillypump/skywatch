@@ -20,6 +20,8 @@ Data is obtained through web scraping from [IQAir Indonesia](https://www.iqair.c
 
 ## 2. Tech Stack & Environment
 
+![tech stack](./pics/dezoomcamp-1.png)
+
 The project is fully containerized using Docker to ensure scalability and easy replication of the local environment.
 
 | Komponen           | Tech               | Desc                                                             |
@@ -210,8 +212,6 @@ The Gold Layer is the final destination in our Medallion Architecture. This laye
 ```
 docker compose down -v --remove-orphans --rmi all
 ```
-
----
 
 ## Appendix
 

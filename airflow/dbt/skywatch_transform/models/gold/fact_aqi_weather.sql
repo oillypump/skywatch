@@ -10,7 +10,6 @@
 ) }}
 
 
--- 1. Hitung threshold secara independen
 with incremental_threshold as (
     {% if is_incremental() %}
     select max(scraped_ts) - interval '2' day as limit_ts from {{ this }}
