@@ -26,6 +26,7 @@ WITH cleaned_source AS (
         CAST(regexp_replace(humidity, '[^\d.-]', '') AS INTEGER) as humidity_val,
         CAST(scraped_ts AS TIMESTAMP) as scraped_ts
     FROM {{source('bronze', 'raw_weather_forecast') }}
+    where observation_ts != 'N/A' and NOT (observation_ts LIKE 'Air%')
 ),
 deduplicated AS (
     SELECT *,

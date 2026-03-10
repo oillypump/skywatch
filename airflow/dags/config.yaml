@@ -3,7 +3,7 @@ locations:
     cities:
       - "jakarta"
   - province: "west-java"
-    cities:
+  `  cities:
       - "bandung"
       - "depok"
       - "bekasi"
@@ -52,26 +52,26 @@ locations:
       - "jambi-city"
       - "muara-bungo"
       - "sungai-penuh"
-  - province: "west-sumatra"
-    cities:
-      - "padang"
-      - "bukittinggi"
-      - "solok"
+  # - province: "west-sumatra"
+  #   cities:
+  #     - "padang"
+  #     - "bukittinggi"
+  #     - "solok"
   - province: "riau"
     cities:
       - "pekanbaru"
       - "duri"
       - "rengat"
-  - province: "north-sumatra"
-    cities:
-      - "medan"
-      - "sibolga"
-      - "berastagi"
-  - province: "aceh"
-    cities:
-      - "banda-aceh"
-      - "lhokseumawe"
-      - "meulaboh"
+  # - province: "north-sumatra"
+  #   cities:
+  #     - "medan"
+  #     - "sibolga"
+  #     - "berastagi"
+  # - province: "aceh"
+  #   cities:
+  #     - "banda-aceh"
+  #     - "lhokseumawe"
+  #     - "meulaboh"
 
 weather_map:
   "01": "Clear Sky"

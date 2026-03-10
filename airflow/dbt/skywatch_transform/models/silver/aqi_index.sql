@@ -31,7 +31,7 @@ WITH cleaned_source AS (
         alert as alert,
         CAST(scraped_ts AS TIMESTAMP) as scraped_ts
     FROM {{ source('bronze', 'raw_aqi_index') }}
-),
+    where observation_ts != 'N/A' and NOT (observation_ts LIKE 'Air%')),
 deduplicated AS (
     SELECT *,
         to_hex(md5(to_utf8(city || CAST(event_ts AS VARCHAR)))) as id,

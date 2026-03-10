@@ -164,17 +164,36 @@ def air_quality_and_forecast_weather():
                         print(f"[!] Weather icon not found for {city}")
 
                     # web data time
-                    h2_element = soup.find("h2")
-                    if h2_element and "•" in h2_element.get_text():
-                        try:
-                            observation_ts = (
-                                h2_element.get_text(strip=True)
-                                .split("•")[-1]
-                                .replace("Local time", "")
-                                .strip()
-                            )
-                        except Exception as e:
-                            print(f"DEBUG: Failed to parse time_info for {city}: {e}")
+                    # h2_element = soup.find("h2")
+                    # if h2_element and "•" in h2_element.get_text():
+                    #     try:
+                    #         observation_ts = (
+                    #             h2_element.get_text(strip=True)
+                    #             .split("•")[-1]
+                    #             .replace("Local time", "")
+                    #             .strip()
+                    #         )
+                    #     except Exception as e:
+                    #         print(f"DEBUG: Failed to parse time_info for {city}: {e}")
+                    #         observation_ts = "N/A"
+
+                    h2_tag = soup.find("h2")
+                    if h2_tag:
+                        h2_text = h2_tag.get_text(strip=True)
+
+                        # Mencari pola seperti "14:00, Mar 10" atau "14.00, Mar 10"
+                        # Pola: (\d{1,2}[:.]\d{2},\s\w{3}\s\d{1,2})
+                        match = re.search(
+                            r"(\d{1,2}[:.]\d{2},\s\w{3}\s\d{1,2})", h2_text
+                        )
+
+                        if match:
+                            observation_ts = match.group(1)  # Hasil: "14:00, Mar 10"
+                        else:
+                            # Jika regex gagal, coba cara terakhir: ambil 15 karakter terakhir
+                            observation_ts = h2_text[-15:].strip()
+                    else:
+                        observation_ts = "N/A"
 
                     # 5. Append Data
                     current_data.append(
@@ -277,6 +296,8 @@ def air_quality_and_forecast_weather():
             for city in loc["cities"]:
                 url = f"https://www.iqair.com/indonesia/{province}/{city}"
                 try:
+                    observation_ts = "N/A"
+
                     print(f"[*] Scraping Current Data: {city}...")
                     response = requests.get(url, headers=headers, timeout=15)
                     response.raise_for_status()
@@ -352,19 +373,39 @@ def air_quality_and_forecast_weather():
                                 )
 
                                 # web data time
-                                h2_element = soup.find("h2")
-                                if h2_element and "•" in h2_element.get_text():
-                                    try:
-                                        observation_ts = (
-                                            h2_element.get_text(strip=True)
-                                            .split("•")[-1]
-                                            .replace("Local time", "")
-                                            .strip()
-                                        )
-                                    except Exception as e:
-                                        print(
-                                            f"DEBUG: Failed to parse time_info for {city}: {e}"
-                                        )
+                                # h2_element = soup.find("h2")
+                                # if h2_element and "•" in h2_element.get_text():
+                                #     try:
+                                #         observation_ts = (
+                                #             h2_element.get_text(strip=True)
+                                #             .split("•")[-1]
+                                #             .replace("Local time", "")
+                                #             .strip()
+                                #         )
+                                #     except Exception as e:
+                                #         print(
+                                #             f"DEBUG: Failed to parse time_info for {city}: {e}"
+                                #         )
+
+                                h2_tag = soup.find("h2")
+                                if h2_tag:
+                                    h2_text = h2_tag.get_text(strip=True)
+
+                                    # Mencari pola seperti "14:00, Mar 10" atau "14.00, Mar 10"
+                                    # Pola: (\d{1,2}[:.]\d{2},\s\w{3}\s\d{1,2})
+                                    match = re.search(
+                                        r"(\d{1,2}[:.]\d{2},\s\w{3}\s\d{1,2})", h2_text
+                                    )
+
+                                    if match:
+                                        observation_ts = match.group(
+                                            1
+                                        )  # Hasil: "14:00, Mar 10"
+                                    else:
+                                        # Jika regex gagal, coba cara terakhir: ambil 15 karakter terakhir
+                                        observation_ts = h2_text[-15:].strip()
+                                else:
+                                    observation_ts = "N/A"
 
                                 all_forecasts.append(
                                     {
@@ -433,6 +474,7 @@ def air_quality_and_forecast_weather():
         return f"🚀 Done! {len(all_forecasts)} rows added to {table_id}"
 
     [extract_aqi(), extract_forecast_weather()]
+    # extract_aqi() >> extract_forecast_weather()
 
 
 dag_obj = air_quality_and_forecast_weather()
