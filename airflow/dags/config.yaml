@@ -3,7 +3,7 @@ locations:
     cities:
       - "jakarta"
   - province: "west-java"
-  `  cities:
+    cities:
       - "bandung"
       - "depok"
       - "bekasi"
@@ -42,11 +42,11 @@ locations:
       - "palembang"
       - "indralaya"
       - "prabumulih"
-  - province: "bengkulu"
-    cities:
-      - "bengkulu-city"
-      - "mukomuko"
-      - "manna"
+  # - province: "bengkulu"
+  #   cities:
+  #     - "bengkulu-city"
+  #     - "mukomuko"
+  #     - "manna"
   - province: "jambi"
     cities:
       - "jambi-city"
