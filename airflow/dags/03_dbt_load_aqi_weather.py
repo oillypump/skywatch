@@ -55,6 +55,7 @@ def weather_aqi_pipeline():
     # Flow DAG
 
     [dbt_dim_city, dbt_dim_aqi, dbt_dim_date, dbt_fact_aqi_weather]
+    # dbt_dim_city >> dbt_dim_aqi >> dbt_dim_date >> dbt_fact_aqi_weather
 
 
 # Inisialisasi DAG

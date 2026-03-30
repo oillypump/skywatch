@@ -44,6 +44,7 @@ def weather_aqi_pipeline():
     )
     # Flow DAG
     [dbt_aqi_index, dbt_forecast_weather]
+    # dbt_aqi_index >> dbt_forecast_weather
 
 
 # Inisialisasi DAG

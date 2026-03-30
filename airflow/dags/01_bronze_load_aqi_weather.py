@@ -1,20 +1,13 @@
 from airflow.sdk import dag, task
 from datetime import datetime, timedelta
-import pandas as pd
-import pyarrow as pa
-import time
-import yaml
-import requests
-from bs4 import BeautifulSoup
 import os
 import pendulum
-from pyiceberg.catalog import load_catalog
 import re
 from airflow.datasets import Dataset
 
 
-AQI_BRONZE = Dataset("s3a://lakehouse/bronze/raw_aqi_index")
-FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
+# AQI_BRONZE = Dataset("s3a://lakehouse/bronze/raw_aqi_index")
+# FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
 
 
 @dag(
@@ -26,12 +19,19 @@ FORECAST_BRONZE = Dataset("s3a://lakehouse/bronze/raw_weather_forecast")
     tags=["bronze", "iceberg"],
 )
 def air_quality_and_forecast_weather():
-    @task(outlets=[AQI_BRONZE])
+    @task(outlets=[Dataset("s3a://lakehouse/bronze/raw_aqi_index")])
     def extract_aqi():
         """
         LAYER : BRONZE
         extract_data
         """
+        import pandas as pd
+        import pyarrow as pa
+        import yaml
+        import requests
+        from bs4 import BeautifulSoup
+        from pyiceberg.catalog import load_catalog
+        import time
 
         dag_path = os.path.dirname(os.path.realpath(__file__))
         cfg_file = os.path.join(dag_path, "config.yaml")
@@ -262,15 +262,22 @@ def air_quality_and_forecast_weather():
             table = catalog.create_table(
                 identifier=table_id,
                 schema=arrow_table.schema,
-                location=f"s3a://lakehouse/{tgt_namespace}/{table_name}",
+                location=f"s3a://lakehouse/{tgt_namespace}.db/{table_name}",
             )
         table.append(arrow_table)
         return f"🚀 Done! {len(current_data)} rows added to {table_id}"
 
-    @task(outlets=[FORECAST_BRONZE])
+    @task(outlets=[Dataset("s3a://lakehouse/bronze/raw_weather_forecast")])
     def extract_forecast_weather():
-        # --- 1. CONFIG & SETUP ---
-        # Menggunakan AIRFLOW_HOME agar path lebih pasti
+
+        import pandas as pd
+        import pyarrow as pa
+        import yaml
+        import requests
+        from bs4 import BeautifulSoup
+        from pyiceberg.catalog import load_catalog
+        import time
+
         dag_path = os.path.dirname(os.path.realpath(__file__))
         cfg_file = os.path.join(dag_path, "config.yaml")
 
@@ -468,7 +475,7 @@ def air_quality_and_forecast_weather():
             table = catalog.create_table(
                 identifier=table_id,
                 schema=arrow_table.schema,
-                location=f"s3a://lakehouse/{tgt_namespace}/{table_name}",
+                location=f"s3a://lakehouse/{tgt_namespace}.db/{table_name}",
             )
         table.append(arrow_table)
         return f"🚀 Done! {len(all_forecasts)} rows added to {table_id}"

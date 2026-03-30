@@ -6,62 +6,57 @@ locations:
     cities:
       - "bandung"
       - "depok"
-      - "bekasi"
-      - "bogor"
+      # - "bogor"
   - province: "banten"
     cities:
       - "serang"
       - "tangerang"
-      - "south-tangerang"
-      - "curug"
+      # - "south-tangerang"
   - province: "central-java"
     cities:
       - "semarang"
       - "surakarta"
-      - "purwokerto"
-      - "wonosobo"
+      # - "wonosobo"
   - province: "east-java"
     cities:
       - "surabaya"
       - "malang"
-      - "sidoarjo"
-      - "jember"
+      # - "jember"
   - province: "yogyakarta"
     cities:
       - "yogyakarta"
       - "sleman"
-      - "bantul"
-      - "wates"
-  - province: "lampung"
-    cities:
-      - "bandar-lampung"
-      - "metro"
-      - "kotabumi"
-  - province: "south-sumatra"
-    cities:
-      - "palembang"
-      - "indralaya"
-      - "prabumulih"
+      # - "bantul"
+  # - province: "lampung"
+  #   cities:
+  #     - "bandar-lampung"
+  #     - "metro"
+  #     - "kotabumi"
+  # - province: "south-sumatra"
+  #   cities:
+  #     - "palembang"
+  #     - "indralaya"
+  #     - "prabumulih"
   # - province: "bengkulu"
   #   cities:
   #     - "bengkulu-city"
   #     - "mukomuko"
   #     - "manna"
-  - province: "jambi"
-    cities:
-      - "jambi-city"
-      - "muara-bungo"
-      - "sungai-penuh"
+  # - province: "jambi"
+  #   cities:
+  #     - "jambi-city"
+  #     - "muara-bungo"
+  #     - "sungai-penuh"
   # - province: "west-sumatra"
   #   cities:
   #     - "padang"
   #     - "bukittinggi"
   #     - "solok"
-  - province: "riau"
-    cities:
-      - "pekanbaru"
-      - "duri"
-      - "rengat"
+  # - province: "riau"
+  #   cities:
+  #     - "pekanbaru"
+  #     - "duri"
+  #     - "rengat"
   # - province: "north-sumatra"
   #   cities:
   #     - "medan"
