@@ -308,28 +308,42 @@ services:
       minio:
         condition: service_healthy
 
-  metabase:
-    image: metabase/metabase:${METABASE_VERSION:-latest}
-    hostname: metabase
+  # metabase:
+  #   image: metabase/metabase:${METABASE_VERSION:-latest}
+  #   hostname: metabase
+  #   ports:
+  #     - 3000:3000
+  #   environment:
+  #     MB_DB_TYPE: postgres
+  #     MB_DB_DBNAME: metabasedb
+  #     MB_DB_PORT: 5432
+  #     MB_DB_USER: metabase
+  #     MB_DB_PASS: metabase
+  #     MB_DB_HOST: postgres
+  #   networks:
+  #     - datengnet
+  #   healthcheck:
+  #     test: curl --fail -I http://localhost:3000/api/health || exit 1
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 5
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker-configs/streamlit/Dockerfile
+    hostname: streamlit
     ports:
-      - 3000:3000
-    environment:
-      MB_DB_TYPE: postgres
-      MB_DB_DBNAME: metabasedb
-      MB_DB_PORT: 5432
-      MB_DB_USER: metabase
-      MB_DB_PASS: metabase
-      MB_DB_HOST: postgres
+      - "3000:8501"
     networks:
       - datengnet
-    healthcheck:
-      test: curl --fail -I http://localhost:3000/api/health || exit 1
-      interval: 15s
-      timeout: 5s
-      retries: 5
     depends_on:
-      postgres:
-        condition: service_healthy
+      trino:
+        condition: service_started
+    restart: always
 
 volumes:
   miniovolume:
