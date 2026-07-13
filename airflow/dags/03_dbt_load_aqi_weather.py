@@ -1,11 +1,11 @@
 from airflow.sdk import dag
 from datetime import datetime
-from airflow.datasets import Dataset
+from airflow.sdk import Asset
 from airflow.providers.standard.operators.bash import BashOperator
 
 
-AQI_SILVER = Dataset("s3a://lakehouse/silver/aqi_index")
-FORECAST_SILVER = Dataset("s3a://lakehouse/silver/weather_forecast")
+AQI_SILVER = Asset("s3a://lakehouse/silver/aqi_index")
+FORECAST_SILVER = Asset("s3a://lakehouse/silver/weather_forecast")
 
 
 @dag(

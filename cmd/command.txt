@@ -1,0 +1,47 @@
+airflow connections add 'snowflake_conn' \
+    --conn-type 'snowflake' \
+    --conn-login 'your_user' \
+    --conn-password 'your_password' \
+    --conn-schema 'your_schema' \
+    --conn-extra '{"account":"xy12345.ap-southeast-1","warehouse":"your_wh","database":"your_db","role":"your_role"}'
+
+# create
+
+./airflow bash
+
+# add 
+
+airflow connections add 'snowflake_conn' \
+--conn-type 'snowflake' \
+--conn-login 'ryanogilvi' \
+--conn-password 'P@ssw0rd2026hello' \
+--conn-extra '{"account": "UDSROEE-PB68586", "warehouse": "COMPUTE_WH", "database": "NIFI_DEMO_DB", "role": "ACCOUNTADMIN"}'
+
+# testing 
+
+airflow connections get snowflake_conn
+airflow connections test snowflake_conn
+
+UDSROEE-PB68586
+COMPUTE_WH
+
+DZ21703	AWS_AP_SOUTHEAST_3	UDSROEE	PB68586
+
+
+UDSROEE-PB68586.snowflakecomputing.com
+ryanogilvi
+P@ssw0rd2026hello
+
+airflow connections delete snowflake_conn
+
+docker exec -it airflow_cli airflow connections add 'snowflake_conn' \
+    --conn-type 'snowflake' \
+    --conn-login 'your_user' \
+    --conn-password 'your_password' \
+    --conn-extra '{"account":"UDSROEE-PB68586.snowflakecomputing.com","warehouse":"your_wh","database":"your_db","role":"your_role"}'
+
+
+docker exec -it dev_airflow-airflow-scheduler-1 airflow connections test snowflake_conn
+
+
+DZ21703-PB68586.ap-southeast-3.snowflakecomputing.com

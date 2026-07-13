@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 import pendulum
 import re
-from airflow.datasets import Dataset
+from airflow.sdk import Asset
 
 
 # AQI_BRONZE = Dataset("s3a://lakehouse/bronze/raw_aqi_index")
@@ -19,7 +19,7 @@ from airflow.datasets import Dataset
     tags=["bronze", "iceberg"],
 )
 def air_quality_and_forecast_weather():
-    @task(outlets=[Dataset("s3a://lakehouse/bronze/raw_aqi_index")])
+    @task(outlets=[Asset("s3a://lakehouse/bronze/raw_aqi_index")])
     def extract_aqi():
         """
         LAYER : BRONZE
@@ -267,7 +267,7 @@ def air_quality_and_forecast_weather():
         table.append(arrow_table)
         return f"🚀 Done! {len(current_data)} rows added to {table_id}"
 
-    @task(outlets=[Dataset("s3a://lakehouse/bronze/raw_weather_forecast")])
+    @task(outlets=[Asset("s3a://lakehouse/bronze/raw_weather_forecast")])
     def extract_forecast_weather():
 
         import pandas as pd

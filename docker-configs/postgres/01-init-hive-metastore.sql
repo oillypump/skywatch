@@ -1,7 +1,0 @@
-CREATE USER hive
-WITH
-    PASSWORD 'hive';
-
-CREATE DATABASE metastore;
-
-ALTER DATABASE metastore OWNER TO hive;
