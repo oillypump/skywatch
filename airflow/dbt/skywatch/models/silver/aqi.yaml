@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: aqi
+    description: "AQI + weather data yang sudah dibersihkan, di-cast tipe datanya, dan di-dedup (silver layer)"
+    columns:
+      - name: id
+        tests:
+          - unique
+          - not_null
+      - name: province
+        tests:
+          - not_null
+      - name: city
+        tests:
+          - not_null
+      - name: aqi_val
+        tests:
+          - not_null
+      - name: observation_ts
+        tests:
+          - not_null
+      - name: scraped_ts
+        tests:
+          - not_null

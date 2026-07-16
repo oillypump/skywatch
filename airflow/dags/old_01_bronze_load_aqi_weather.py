@@ -11,7 +11,7 @@ from airflow.sdk import Asset
 
 
 @dag(
-    dag_id="01_bronze_load_aqi_weather",
+    dag_id="old_01_bronze_load_aqi_weather",
     schedule="*/10 * * * *",
     start_date=datetime(2026, 1, 1),
     catchup=False,

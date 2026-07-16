@@ -9,7 +9,7 @@ FORECAST_SILVER = Asset("s3a://lakehouse/silver/weather_forecast")
 
 
 @dag(
-    dag_id="03_dbt_load_aqi_weather",
+    dag_id="old_03_dbt_load_aqi_weather",
     start_date=datetime(2026, 2, 1),
     schedule=(AQI_SILVER, FORECAST_SILVER),
     catchup=False,

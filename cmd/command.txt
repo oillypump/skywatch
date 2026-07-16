@@ -17,10 +17,20 @@ airflow connections add 'snowflake_conn' \
 --conn-password 'P@ssw0rd2026hello' \
 --conn-extra '{"account": "UDSROEE-PB68586", "warehouse": "COMPUTE_WH", "database": "NIFI_DEMO_DB", "role": "ACCOUNTADMIN"}'
 
+airflow connections add 'snowflake_conn' \
+--conn-type 'snowflake' \
+--conn-login 'ryanogilvi' \
+--conn-password 'P@ssw0rd2026hello' \
+--conn-extra '{"account": "UDSROEE-PB68586", "warehouse": "COMPUTE_WH", "role": "ACCOUNTADMIN"}'
+
 # testing 
 
 airflow connections get snowflake_conn
 airflow connections test snowflake_conn
+
+# delete 
+airflow connections delete snowflake_conn
+
 
 UDSROEE-PB68586
 COMPUTE_WH
@@ -32,7 +42,6 @@ UDSROEE-PB68586.snowflakecomputing.com
 ryanogilvi
 P@ssw0rd2026hello
 
-airflow connections delete snowflake_conn
 
 docker exec -it airflow_cli airflow connections add 'snowflake_conn' \
     --conn-type 'snowflake' \
@@ -45,3 +54,22 @@ docker exec -it dev_airflow-airflow-scheduler-1 airflow connections test snowfla
 
 
 DZ21703-PB68586.ap-southeast-3.snowflakecomputing.com
+
+pip install dbt-snowflake==1.9.0 --break-system-packages
+
+
+-- 1. Buat database
+CREATE DATABASE IF NOT EXISTS WEATHER;
+
+-- 2. Pindah context ke database itu
+USE DATABASE WEATHER;
+
+-- 3. Buat schema
+CREATE SCHEMA IF NOT EXISTS BRONZE;
+
+-- 4. Pindah context ke schema itu
+USE SCHEMA BRONZE;
+
+
+
+

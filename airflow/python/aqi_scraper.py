@@ -5,6 +5,10 @@ Dipisah dari file DAG supaya:
 1. DAG file (dags/*.py) tetap ringkas — hanya berisi orkestrasi (schedule, retry, dependency)
 2. Logic scraping bisa di-testing terpisah tanpa perlu spin up Airflow
 3. Kalau nanti mau dipindah ke container terpisah, tinggal copy file ini apa adanya
+
+Semua parameter koneksi (conn_id, database, schema, table) SENGAJA tidak di-hardcode
+di sini — dikirim dari DAG supaya module ini reusable dan config-nya cuma ada
+di satu tempat (DAG file).
 """
 
 import logging
@@ -23,35 +27,37 @@ from snowflake.connector.pandas_tools import write_pandas
 
 logger = logging.getLogger(__name__)
 
-SNOWFLAKE_CONN_ID = "snowflake_conn"
-BRONZE_DATABASE = "NIFI_DEMO_DB"
-BRONZE_SCHEMA = "NIFI_SCHEMA"
-TARGET_TABLE = "AQI_RAW"
-
-CREATE_TABLE_SQL = f"""
-    CREATE TABLE IF NOT EXISTS {BRONZE_DATABASE}.{BRONZE_SCHEMA}.{TARGET_TABLE} (
-        PROVINCE         VARCHAR(100),
-        CITY             VARCHAR(100),
-        AQI              VARCHAR(20),
-        AQI_STATUS       VARCHAR(50),
-        MAIN_POLLUTANT   VARCHAR(50),
-        CONCENTRATION    VARCHAR(50),
-        WEATHER          VARCHAR(100),
-        TEMPERATURE      VARCHAR(20),
-        HUMIDITY         VARCHAR(20),
-        WIND_SPEED       VARCHAR(20),
-        WIND_DIRECTION   VARCHAR(50),
-        ALERT            VARCHAR(500),
-        OBSERVATION_TS   TIMESTAMP_NTZ,
-        SCRAPED_TS       TIMESTAMP_NTZ
-    )
-"""
-
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
     "Accept-Language": "en-US,en;q=0.9",
 }
+
+
+def build_create_table_sql(database: str, schema: str, table: str) -> str:
+    """
+    Helper untuk generate DDL create table. Dipanggil dari DAG (untuk
+    SQLExecuteQueryOperator) maupun dari create_table() di module ini,
+    supaya definisi kolom cuma ada di SATU tempat.
+    """
+    return f"""
+        CREATE TABLE IF NOT EXISTS {database}.{schema}.{table} (
+            PROVINCE         VARCHAR(100),
+            CITY             VARCHAR(100),
+            AQI              VARCHAR(20),
+            AQI_STATUS       VARCHAR(50),
+            MAIN_POLLUTANT   VARCHAR(50),
+            CONCENTRATION    VARCHAR(50),
+            WEATHER          VARCHAR(100),
+            TEMPERATURE      VARCHAR(20),
+            HUMIDITY         VARCHAR(20),
+            WIND_SPEED       VARCHAR(20),
+            WIND_DIRECTION   VARCHAR(50),
+            ALERT            VARCHAR(500),
+            OBSERVATION_TS   TIMESTAMP_NTZ,
+            SCRAPED_TS       TIMESTAMP_NTZ
+        )
+    """
 
 
 def _load_config() -> dict:
@@ -210,37 +216,13 @@ def _scrape_city(province: str, city: str, weather_map: dict, local_tz) -> dict:
     }
 
 
-def create_table() -> None:
-    """
-    Entry point untuk task terpisah: pastikan table target sudah ada
-    sebelum proses scrape+load dijalankan.
-    """
-    hook = SnowflakeHook(snowflake_conn_id=SNOWFLAKE_CONN_ID)
-    conn = hook.get_conn()
-
-    try:
-        cursor = conn.cursor()
-        logger.info(
-            "Memastikan table %s.%s.%s tersedia (create if not exists) ...",
-            BRONZE_DATABASE,
-            BRONZE_SCHEMA,
-            TARGET_TABLE,
-        )
-        cursor.execute(CREATE_TABLE_SQL)
-        logger.info(
-            "Table %s.%s.%s siap dipakai (sudah ada / baru dibuat).",
-            BRONZE_DATABASE,
-            BRONZE_SCHEMA,
-            TARGET_TABLE,
-        )
-    finally:
-        conn.close()
-
-
-def run() -> None:
+def run(conn_id: str, database: str, schema: str, table: str) -> None:
     """
     Entry point untuk task scrape + load.
-    Asumsi: table target SUDAH ada (dibuat lewat task create_table terpisah).
+    Asumsi: table target SUDAH ada (dibuat lewat task create_table di DAG,
+    pakai SQLExecuteQueryOperator + build_create_table_sql()).
+
+    Semua parameter koneksi dikirim dari DAG, tidak di-hardcode di sini.
     """
     cfg = _load_config()
     weather_map = cfg.get("weather_map", {})
@@ -252,7 +234,7 @@ def run() -> None:
         province = loc["province"]
         for city in loc["cities"]:
             current_data.append(_scrape_city(province, city, weather_map, local_tz))
-            time.sleep(2)
+            time.sleep(5)
 
     if not current_data:
         logger.warning("Tidak ada data yang berhasil di-scrape.")
@@ -262,16 +244,16 @@ def run() -> None:
     df.columns = [c.upper() for c in df.columns]
     logger.info("Total %d baris siap di-load.", len(df))
 
-    hook = SnowflakeHook(snowflake_conn_id=SNOWFLAKE_CONN_ID)
+    hook = SnowflakeHook(snowflake_conn_id=conn_id)
     conn = hook.get_conn()
 
     try:
         success, num_chunks, num_rows, _ = write_pandas(
             conn=conn,
             df=df,
-            table_name=TARGET_TABLE,
-            database=BRONZE_DATABASE,
-            schema=BRONZE_SCHEMA,
+            table_name=table,
+            database=database,
+            schema=schema,
             auto_create_table=False,
             overwrite=False,
         )
@@ -280,13 +262,13 @@ def run() -> None:
             logger.info(
                 "Berhasil insert %d baris ke %s.%s.%s (%d chunk).",
                 num_rows,
-                BRONZE_DATABASE,
-                BRONZE_SCHEMA,
-                TARGET_TABLE,
+                database,
+                schema,
+                table,
                 num_chunks,
             )
         else:
-            raise RuntimeError(f"write_pandas gagal untuk tabel {TARGET_TABLE}")
+            raise RuntimeError(f"write_pandas gagal untuk tabel {table}")
 
     finally:
         conn.close()

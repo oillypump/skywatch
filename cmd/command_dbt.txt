@@ -1,0 +1,52 @@
+## pip install dbt-snowflake
+## dbt init skywatch --skip-profile-setup
+## dbt debug
+## dbt parse
+## dbt run --select path:models/gold --full-refresh
+## dbt test --select path:models/gold
+
+# 1 model spesifik
+dbt run --select dim_date
+
+# beberapa model spesifik sekaligus
+dbt run --select dim_date dim_city
+
+# model + semua yang bergantung ke dia (downstream)
+dbt run --select dim_date+
+
+# model + semua yang dia butuhkan (upstream)
+dbt run --select +fct_aqi_hourly
+
+# model + upstream DAN downstream-nya
+dbt run --select +dim_date+
+
+# semua model di folder tertentu (yang kamu pakai sekarang)
+dbt run --select path:models/gold
+
+# 1 model spesifik
+dbt test --select dim_date
+
+# beberapa model sekaligus
+dbt test --select dim_date dim_city
+
+# model + downstream-nya (yang bergantung ke dia)
+dbt test --select dim_date+
+
+# model + upstream-nya (yang dia butuhkan)
+dbt test --select +fct_aqi_hourly
+
+# semua di folder gold
+dbt test --select path:models/gold
+
+# semua yang ada di project (run + test sekaligus)
+dbt build
+
+
+dbt seed --select dim_hour dim_aqi_category
+dbt run --select dim_date --full-refresh
+dbt run --select fct_aqi_hourly --full-refresh
+dbt test --select path:models/gold
+
+
+dbt docs generate
+dbt docks serve --port 8081

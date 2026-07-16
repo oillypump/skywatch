@@ -82,6 +82,7 @@ x-airflow-common: &airflow-common
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/python:/opt/airflow/python
+    - ${AIRFLOW_PROJ_DIR:-.}/dbt:/opt/airflow/dbt
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
     # redis:
@@ -312,6 +313,7 @@ volumes:
 networks:
   dateng_net:
     driver: bridge
+    name: dateng_net
 
   # redis:
   #   # Redis is limited to 7.2-bookworm due to licencing change

@@ -1,0 +1,25 @@
+hour_of_day,hour_label,period_of_day
+0,00:00,late night
+1,01:00,late night
+2,02:00,late night
+3,03:00,late night
+4,04:00,late night
+5,05:00,morning
+6,06:00,morning
+7,07:00,morning
+8,08:00,morning
+9,09:00,morning
+10,10:00,morning
+11,11:00,afternoon
+12,12:00,afternoon
+13,13:00,afternoon
+14,14:00,afternoon
+15,15:00,evening
+16,16:00,evening
+17,17:00,evening
+18,18:00,evening
+19,19:00,night
+20,20:00,night
+21,21:00,night
+22,22:00,night
+23,23:00,night

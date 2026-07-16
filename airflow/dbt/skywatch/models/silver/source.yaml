@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: BRONZE
+    database: WEATHER
+    schema: BRONZE
+    tables:
+      - name: AQI_RAW
+        description: "Raw AQI + weather data hasil scrape dari iqair.com (semua kolom VARCHAR)"
+        config:
+          loaded_at_field: SCRAPED_TS

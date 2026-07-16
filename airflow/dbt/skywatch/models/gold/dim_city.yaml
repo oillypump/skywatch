@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: dim_city # <- dbt cari model bernama "dim_city", gak peduli file ini namanya apa
+    columns:
+      - name: city_id
+        tests:
+          - unique
+          - not_null

@@ -1,0 +1,10 @@
+version: 2
+
+seeds:
+  - name: dim_hour
+    description: "Reference table 24 jam (00-23) dengan atribut period_of_day, statis"
+    columns:
+      - name: hour_of_day
+        tests:
+          - unique
+          - not_null

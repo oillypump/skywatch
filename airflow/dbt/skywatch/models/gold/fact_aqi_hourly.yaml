@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: fact_aqi_hourly
+    description: "Fact table agregasi AQI + cuaca per kota, per jam"
+    columns:
+      - name: hourly_id
+        tests:
+          - not_null
+      - name: city_id
+        tests:
+          - not_null
+      - name: date_id
+        tests:
+          - not_null
+      - name: hour_of_day
+        tests:
+          - not_null
+      # - name: aqi_id
+      #   tests:
+      #     - not_null
+      - name: province
+        tests:
+          - not_null
+      - name: city
+        tests:
+          - not_null
+      - name: observation_hour
+        tests:
+          - not_null
+      # - name: avg_aqi
+      #   tests:
+      #     - not_null
+      # - name: min_aqi
+      #   tests:
+      #     - not_null
+      # - name: max_aqi
+      #   tests:
+      #     - not_null
+      # - name: avg_concentration
+      #   tests:
+      #     - not_null
+      # - name: avg_temperature
+      #   tests:
+      #     - not_null
+      # - name: avg_humidity
+      #   tests:
+      #     - not_null
+      # - name: avg_wind_speed
+      #   tests:
+      #     - not_null
+      # - name: dominant_aqi_status
+      #   tests:
+      #     - not_null
+      - name: observation_count
+        tests:
+          - not_null

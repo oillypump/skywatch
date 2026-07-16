@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: dim_aqi_status
+    description: "Reference table kategori AQI standar (EPA), statis - bukan diturunkan dari source"
+    columns:
+      - name: aqi_id
+        tests:
+          - unique
+          - not_null
+      - name: aqi_status
+        tests:
+          - unique
+          - not_null

@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "Calendar dimension, generate otomatis (bukan diturunkan dari source)"
+    columns:
+      - name: date_id
+        tests:
+          - unique
+          - not_null
+      - name: date_day
+        tests:
+          - unique
+          - not_null
