@@ -1,0 +1,41 @@
+PROVINCE,CITY,AQI,AQI_STATUS,MAIN_POLLUTANT,CONCENTRATION,WEATHER,TEMPERATURE,HUMIDITY,WIND_SPEED,WIND_DIRECTION,ALERT,OBSERVATION_TS,SCRAPED_TS
+Jakarta,Jakarta,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:39:11
+West Java,Bandung,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:39:17
+West Java,Depok,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:39:24
+West Java,Bogor,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:39:30
+Banten,Serang,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:39:36
+Banten,Tangerang,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:39:42
+Banten,South Tangerang,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:39:48
+Central Java,Semarang,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:39:54
+Central Java,Surakarta,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:00
+Central Java,Wonosobo,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:06
+East Java,Surabaya,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:11
+East Java,Malang,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:18
+East Java,Jember,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:24
+Yogyakarta,Yogyakarta,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:30
+Yogyakarta,Sleman,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:36
+Yogyakarta,Bantul,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:42
+Lampung,Bandar Lampung,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:48
+Lampung,Metro,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:40:54
+Lampung,Kotabumi,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:01
+South Sumatra,Palembang,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:07
+South Sumatra,Indralaya,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:13
+South Sumatra,Prabumulih,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:19
+Bengkulu,Bengkulu City,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:26
+Bengkulu,Mukomuko,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:32
+Bengkulu,Manna,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:38
+Jambi,Jambi City,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:45
+Jambi,Muara Bungo,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:51
+Jambi,Sungai Penuh,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:41:56
+West Sumatra,Padang,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:02
+West Sumatra,Bukittinggi,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:09
+West Sumatra,Solok,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:15
+Riau,Pekanbaru,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:21
+Riau,Duri,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:27
+Riau,Rengat,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:33
+North Sumatra,Medan,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:39
+North Sumatra,Sibolga,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:45
+North Sumatra,Berastagi,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:50
+Aceh,Banda Aceh,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:42:57
+Aceh,Lhokseumawe,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:43:03
+Aceh,Meulaboh,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,No Alert,,2026-07-27 13:43:09
